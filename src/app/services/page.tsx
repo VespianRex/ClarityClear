@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { SectionWrapper } from '@/components/common/section-wrapper';
 import { ServiceCard, type ServiceCardProps } from '@/components/services/service-card';
-import { Home, Briefcase, Trash2, Building, Recycling, AlertTriangle } from 'lucide-react';
+import { Home, Briefcase, Trash2, Building, Recycle, AlertTriangle } from 'lucide-react';
 import { CTA_BOOKING_HREF, CTA_BOOKING_LABEL } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -60,7 +60,7 @@ const servicesData: ServiceCardProps[] = [
   {
     title: "Recycling & WEEE Disposal",
     description: "Eco-friendly disposal of Waste Electrical and Electronic Equipment (WEEE) and commitment to recycling as much waste as possible.",
-    icon: Recycling,
+    icon: Recycle,
     imageUrl: "https://placehold.co/600x400.png",
     imageAlt: "Recycling bins and electronic waste",
     imageHint: "recycling electronics",
