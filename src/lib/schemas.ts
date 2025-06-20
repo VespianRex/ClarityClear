@@ -1,3 +1,4 @@
+
 import { z } from 'zod';
 
 export const PersonalDetailsSchema = z.object({
@@ -26,3 +27,11 @@ export type CollectionDetailsFormData = z.infer<typeof CollectionDetailsSchema>;
 
 export const BookingFormSchema = PersonalDetailsSchema.merge(CollectionDetailsSchema);
 export type BookingFormData = z.infer<typeof BookingFormSchema>;
+
+export const ContactFormSchema = z.object({
+  fullName: z.string().min(2, { message: "Full name must be at least 2 characters." }),
+  email: z.string().email({ message: "Invalid email address." }),
+  subject: z.string().min(3, { message: "Subject must be at least 3 characters." }).optional(),
+  message: z.string().min(10, { message: "Message must be at least 10 characters." }),
+});
+export type ContactFormData = z.infer<typeof ContactFormSchema>;

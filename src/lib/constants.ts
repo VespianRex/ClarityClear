@@ -1,5 +1,6 @@
+
 import type { LucideIcon } from 'lucide-react';
-import { Home, Briefcase, Users, BookCheck, Star, HelpCircle, MessageSquareText } from 'lucide-react';
+import { Home, Briefcase, Users, BookCheck, Star, HelpCircle, MessageSquareText, Mail } from 'lucide-react';
 
 export const APP_NAME = "ClarityClear";
 
@@ -19,10 +20,13 @@ export const NAV_LINKS: NavLink[] = [
   { href: "/best-practices", label: "Best Practices", icon: BookCheck },
   { href: "/testimonials", label: "Testimonials", icon: Star },
   { href: "/faq", label: "FAQ", icon: HelpCircle },
+  { href: "/contact", label: "Contact Us", icon: Mail },
 ];
 
 export const CTA_BOOKING_LABEL = "Book a Collection";
 export const CTA_BOOKING_HREF = "/booking";
+
+export const CONTACT_EMAIL = `info@${APP_NAME.toLowerCase().replace(/\s+/g, '')}.com`;
 
 export const SOCIAL_LINKS = [
   { name: "WhatsApp", href: `https://wa.me/${WHATSAPP_PHONE_NUMBER}?text=${encodeURIComponent(WHATSAPP_PREFILL_MESSAGE)}`, icon: MessageSquareText },

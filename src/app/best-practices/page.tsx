@@ -1,7 +1,9 @@
+
 import { Metadata } from 'next';
 import { SectionWrapper } from '@/components/common/section-wrapper';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Lightbulb, ListChecks, ShieldCheck, Recycle } from 'lucide-react';
+import { Lightbulb, ListChecks, ShieldCheck, Recycle, Home as HomeIcon } from 'lucide-react'; // Changed Home to HomeIcon for clarity
+import { Button } from '@/components/ui/button'; // Added Button import
 
 export const metadata: Metadata = {
   title: 'Best Practices for House Clearance',
@@ -36,13 +38,13 @@ const bestPractices = [
   {
     id: "bp5",
     title: "Prepare the Property",
-    icon: Home,
+    icon: HomeIcon, // Use imported HomeIcon from lucide-react
     content: "Ensure clear access for the clearance team. Remove any obstacles and inform them of any access restrictions (e.g., parking, stairs). If possible, group items for disposal in one area to speed up the process. Communicate any specific instructions clearly to the team."
   },
   {
     id: "bp6",
     title: "Be Aware of Prohibited Items",
-    icon: ShieldCheck,
+    icon: ShieldCheck, // Consider a more specific icon like AlertTriangle if appropriate for "prohibited"
     content: "Most clearance companies cannot remove certain hazardous materials like asbestos, certain chemicals, or medical waste without special arrangements. Discuss any potentially problematic items with the company beforehand."
   }
 ];
@@ -94,11 +96,3 @@ export default function BestPracticesPage() {
     </>
   );
 }
-// Dummy Home icon for practice bp5 as it's not directly available in lucide for this list.
-// It can be replaced with a more suitable icon if available or custom SVG.
-const Home = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-    <polyline points="9 22 9 12 15 12 15 22"></polyline>
-  </svg>
-);

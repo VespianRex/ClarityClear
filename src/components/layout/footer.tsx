@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { APP_NAME, SOCIAL_LINKS } from "@/lib/constants";
 import { Zap } from "lucide-react";
@@ -26,6 +27,7 @@ export function Footer() {
               <li><Link href="/services" className="text-muted-foreground hover:text-primary transition-colors">Services</Link></li>
               <li><Link href="/booking" className="text-muted-foreground hover:text-primary transition-colors">Book Collection</Link></li>
               <li><Link href="/faq" className="text-muted-foreground hover:text-primary transition-colors">FAQ</Link></li>
+              <li><Link href="/contact" className="text-muted-foreground hover:text-primary transition-colors">Contact Us</Link></li>
             </ul>
           </div>
           
