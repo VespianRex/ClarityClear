@@ -33,7 +33,7 @@ export function Footer() {
           
           <div className="flex flex-col items-center md:items-end">
             <h3 className="font-headline text-lg font-semibold mb-3 text-primary">Get in Touch</h3>
-            <WhatsAppButton />
+            <WhatsAppButton size="lg" />
             {/* Add other social icons here if needed */}
             {/* <div className="flex space-x-4 mt-4">
               {SOCIAL_LINKS.filter(link => link.name !== "WhatsApp").map((link) => (

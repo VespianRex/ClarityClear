@@ -4,7 +4,7 @@
 import * as React from 'react';
 import { Button } from "@/components/ui/button";
 import { SOCIAL_LINKS } from "@/lib/constants";
-// Removed MessageSquareText import as we'll use an SVG
+import { cn } from "@/lib/utils";
 
 interface WhatsAppButtonProps {
   className?: string;
@@ -31,12 +31,21 @@ export function WhatsAppButton({ className, variant = "button", size="default", 
 
   const iconClassName = variant === "button" && size !== "icon" ? "mr-2 h-5 w-5" : "h-5 w-5";
 
+  const baseStyle = "bg-[#25D366] text-white hover:bg-[#1DAE56] rounded-full shadow-lg";
+  
+  // For icon variant, we want a smaller padding and to make it perfectly round if it's just an icon
+  const iconVariantStyle = variant === "icon" && size === "icon" ? "p-2" : "";
+
+
   return (
     <Button
       asChild
-      variant={variant === "icon" ? "outline" : "default"}
+      // The variant prop on Button component might conflict with our desired styling,
+      // so we ensure our custom styles take precedence or avoid using it if it overrides.
+      // For this case, we can remove the ShadCN variant if we're fully customising.
+      // However, using 'default' and overriding should be fine.
       size={size}
-      className={className}
+      className={cn(baseStyle, iconVariantStyle, className)}
       aria-label="Chat on WhatsApp"
     >
       <a href={whatsAppLink} target="_blank" rel="noopener noreferrer">

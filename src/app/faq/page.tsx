@@ -4,7 +4,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { HelpCircle, DollarSign, Clock, Recycle, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { CTA_BOOKING_HREF, CTA_BOOKING_LABEL, WHATSAPP_PHONE_NUMBER } from '@/lib/constants';
+import { CTA_BOOKING_HREF, CTA_BOOKING_LABEL } from '@/lib/constants';
+import { WhatsAppButton } from '@/components/common/whatsapp-button';
 
 export const metadata: Metadata = {
   title: 'Frequently Asked Questions',
@@ -94,13 +95,11 @@ export default function FaqPage() {
             <p className="text-lg text-primary-foreground/80 mb-6 max-w-xl mx-auto">
                 If you have more questions or need specific advice, don't hesitate to get in touch. Our friendly team is here to help.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                 <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground">
                     <Link href={CTA_BOOKING_HREF}>{CTA_BOOKING_LABEL}</Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="text-primary-foreground border-primary-foreground/50 hover:bg-primary-foreground/10">
-                    <a href={`https://wa.me/${WHATSAPP_PHONE_NUMBER}`} target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a>
-                </Button>
+                <WhatsAppButton size="lg" />
             </div>
         </div>
       </SectionWrapper>
