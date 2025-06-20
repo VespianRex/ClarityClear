@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { CTA_BOOKING_HREF, CTA_BOOKING_LABEL, APP_NAME } from '@/lib/constants';
 import { MoveRight, Sparkles } from 'lucide-react';
+import { WhatsAppButton } from '@/components/common/whatsapp-button';
 
 export function HeroSection() {
   return (
@@ -19,18 +20,14 @@ export function HeroSection() {
               {APP_NAME} offers professional and reliable house clearance services. 
               Reclaim your space with our hassle-free solutions.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start items-center">
               <Button asChild size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground text-lg px-8 py-6">
                 <Link href={CTA_BOOKING_HREF}>
                   {CTA_BOOKING_LABEL}
                   <MoveRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="text-lg px-8 py-6">
-                <Link href="/services">
-                  Learn More
-                </Link>
-              </Button>
+              <WhatsAppButton size="lg" text="Chat with Us" />
             </div>
           </div>
           <div className="relative aspect-video rounded-lg overflow-hidden shadow-2xl">
