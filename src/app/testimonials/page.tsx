@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { SectionWrapper } from '@/components/common/section-wrapper';
+import { fetchFromStrapi } from '@/lib/strapi-service';
 import { TestimonialCard, type TestimonialCardProps } from '@/components/testimonials/testimonial-card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
