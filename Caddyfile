@@ -1,0 +1,145 @@
+# Secure Caddy configuration with multiple security layers
+{
+    # Global options
+    email admin@andub.go.ro
+    
+    # Enable security features
+    servers {
+        timeouts {
+            read_body   10s
+            read_header 5s
+            write       10s
+            idle        2m
+        }
+        max_header_size 16KB
+    }
+    
+    # Rate limiting
+    order rate_limit before basicauth
+}
+
+# Import security snippets
+(security_headers) {
+    header {
+        # Remove server info
+        -Server
+        -X-Powered-By
+        
+        # Security headers
+        X-Frame-Options "SAMEORIGIN"
+        X-Content-Type-Options "nosniff"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        
+        # HSTS (6 months)
+        Strict-Transport-Security "max-age=15552000; includeSubDomains; preload"
+        
+        # CSP - adjust based on your needs
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' wss: https:; frame-ancestors 'none';"
+    }
+}
+
+(rate_limiting) {
+    rate_limit {
+        zone dynamic_zone {
+            key {remote_host}
+            window 1m
+            events 60
+        }
+    }
+}
+
+(logging) {
+    log {
+        output file /var/log/caddy/access.log {
+            roll_size 100mb
+            roll_keep 10
+            roll_keep_for 720h
+        }
+        format json
+        level INFO
+    }
+}
+
+# Main site configuration
+andub.go.ro {
+    import security_headers
+    import rate_limiting
+    import logging
+    
+    # Enable compression
+    encode gzip zstd
+    
+    # IP filtering - uncomment and modify as needed
+    # @blocked {
+    #     remote_ip 10.0.0.0/8 172.16.0.0/12 192.168.0.0/16
+    #     not remote_ip 192.168.1.0/24  # Allow your local network
+    # }
+    # respond @blocked "Access Denied" 403
+    
+    # Block common attack patterns
+    @blocked_paths {
+        path *.sql *.bak *.backup *.git* *.env* *.config *.ini
+        path /admin* /wp-admin* /phpmyadmin* /.well-known/security.txt
+    }
+    respond @blocked_paths 404
+    
+    # Block suspicious user agents
+    @blocked_agents {
+        header User-Agent *bot*
+        header User-Agent *crawler*
+        header User-Agent *spider*
+        header User-Agent *curl*
+        header User-Agent *wget*
+    }
+    respond @blocked_agents 403
+    
+    # Reverse proxy to Next.js
+    reverse_proxy nextjs:3000 {
+        # Health checks
+        health_uri /api/health
+        health_interval 30s
+        health_timeout 5s
+        
+        # Security headers for proxy
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+        
+        # Timeouts
+        transport http {
+            dial_timeout 5s
+            response_header_timeout 5s
+        }
+    }
+    
+    # Handle errors
+    handle_errors {
+        @404 {
+            expression {http.error.status_code} == 404
+        }
+        respond @404 "Page not found" 404
+        
+        @5xx {
+            expression {http.error.status_code} >= 500
+        }
+        respond @5xx "Internal server error" 500
+    }
+}
+
+# PocketBase API (internal only - not exposed externally)
+# Only accessible from Docker network
+pb.local:8090 {
+    import security_headers
+    import logging
+    
+    # Only allow from internal Docker network
+    @allowed {
+        remote_ip 172.20.0.0/16
+    }
+    respond @allowed {
+        reverse_proxy pocketbase:8090
+    }
+    respond "Access Denied" 403
+}

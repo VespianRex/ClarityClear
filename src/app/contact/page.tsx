@@ -1,11 +1,23 @@
-
 import { Metadata } from 'next';
 import { SectionWrapper } from '@/components/common/section-wrapper';
 import { ContactForm } from '@/components/contact/contact-form';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ServiceAreaMap } from '@/components/common/service-area-map';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Mail, Phone, MapPin } from 'lucide-react';
-import { APP_NAME, CONTACT_EMAIL, WHATSAPP_PHONE_NUMBER, CTA_BOOKING_HREF, CTA_BOOKING_LABEL } from '@/lib/constants';
+import {
+  APP_NAME,
+  CONTACT_EMAIL,
+  WHATSAPP_PHONE_NUMBER,
+  CTA_BOOKING_HREF,
+  CTA_BOOKING_LABEL,
+} from '@/lib/constants';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
@@ -18,9 +30,12 @@ export default function ContactPage() {
     <>
       <SectionWrapper className="bg-secondary">
         <div className="text-center">
-          <h1 className="font-headline text-4xl sm:text-5xl font-bold text-primary mb-4">Contact Us</h1>
+          <h1 className="font-headline text-4xl sm:text-5xl font-bold text-primary mb-4">
+            Contact Us
+          </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-            We're here to help! Whether you have a question about our services, need a quote, or just want to say hello, feel free to reach out.
+            We're here to help! Whether you have a question about our services,
+            need a quote, or just want to say hello, feel free to reach out.
           </p>
         </div>
       </SectionWrapper>
@@ -29,56 +44,114 @@ export default function ContactPage() {
         <div className="grid md:grid-cols-2 gap-12 items-start">
           <div className="space-y-8">
             <div>
-              <h2 className="font-headline text-3xl font-bold text-primary mb-6">Get in Touch Directly</h2>
+              <h2 className="font-headline text-3xl font-bold text-primary mb-6">
+                Get in Touch Directly
+              </h2>
               <div className="space-y-6">
-                <a href={`mailto:${CONTACT_EMAIL}`} className="flex items-start group">
+                <a
+                  href={`mailto:${CONTACT_EMAIL}`}
+                  className="flex items-start group"
+                >
                   <Mail className="h-7 w-7 text-accent mr-4 mt-1 shrink-0" />
                   <div>
-                    <h3 className="font-semibold text-primary text-xl group-hover:underline">Email Us</h3>
+                    <h3 className="font-semibold text-primary text-xl group-hover:underline">
+                      Email Us
+                    </h3>
                     <p className="text-muted-foreground">{CONTACT_EMAIL}</p>
-                    <p className="text-sm text-accent group-hover:underline">Send us an email &rarr;</p>
+                    <p className="text-sm text-accent group-hover:underline">
+                      Send us an email &rarr;
+                    </p>
                   </div>
                 </a>
-                <a href={`https://wa.me/${WHATSAPP_PHONE_NUMBER}`} target="_blank" rel="noopener noreferrer" className="flex items-start group">
+                <a
+                  href={`https://wa.me/${WHATSAPP_PHONE_NUMBER}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start group"
+                >
                   <Phone className="h-7 w-7 text-accent mr-4 mt-1 shrink-0" />
                   <div>
-                    <h3 className="font-semibold text-primary text-xl group-hover:underline">Call or WhatsApp</h3>
-                    <p className="text-muted-foreground">+{WHATSAPP_PHONE_NUMBER.slice(0,1)} ({WHATSAPP_PHONE_NUMBER.slice(1,4)}) {WHATSAPP_PHONE_NUMBER.slice(4,7)}-{WHATSAPP_PHONE_NUMBER.slice(7)}</p>
-                     <p className="text-sm text-accent group-hover:underline">Chat with us on WhatsApp &rarr;</p>
+                    <h3 className="font-semibold text-primary text-xl group-hover:underline">
+                      Call or WhatsApp
+                    </h3>
+                    <p className="text-muted-foreground">
+                      +{WHATSAPP_PHONE_NUMBER.slice(0, 1)} (
+                      {WHATSAPP_PHONE_NUMBER.slice(1, 4)}){' '}
+                      {WHATSAPP_PHONE_NUMBER.slice(4, 7)}-
+                      {WHATSAPP_PHONE_NUMBER.slice(7)}
+                    </p>
+                    <p className="text-sm text-accent group-hover:underline">
+                      Chat with us on WhatsApp &rarr;
+                    </p>
                   </div>
                 </a>
-                 <div className="flex items-start">
+                <div className="flex items-start">
                   <MapPin className="h-7 w-7 text-accent mr-4 mt-1 shrink-0" />
                   <div>
-                    <h3 className="font-semibold text-primary text-xl">Our Office (By Appointment)</h3>
-                    <p className="text-muted-foreground">123 Clarity Street<br />Clean City, CS 12345<br />United Kingdom</p>
-                    <p className="text-sm text-muted-foreground">Please call to schedule a visit.</p>
+                    <h3 className="font-semibold text-primary text-xl">
+                      Our Office (By Appointment)
+                    </h3>
+                    <p className="text-muted-foreground">
+                      123 Clarity Street
+                      <br />
+                      Clean City, CS 12345
+                      <br />
+                      United Kingdom
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Please call to schedule a visit.
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
-             <div>
-                <h3 className="font-headline text-2xl font-bold text-primary mb-4">Need to Book a Collection?</h3>
-                <p className="text-muted-foreground mb-4">
-                    For the quickest way to get a quote and schedule your clearance, please use our online booking form.
-                </p>
-                <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                    <Link href={CTA_BOOKING_HREF}>{CTA_BOOKING_LABEL}</Link>
-                </Button>
+            <div>
+              <h3 className="font-headline text-2xl font-bold text-primary mb-4">
+                Need to Book a Collection?
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                For the quickest way to get a quote and schedule your clearance,
+                please use our online booking form.
+              </p>
+              <Button
+                asChild
+                size="lg"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                <Link href={CTA_BOOKING_HREF}>{CTA_BOOKING_LABEL}</Link>
+              </Button>
             </div>
           </div>
 
           <Card className="shadow-xl">
             <CardHeader>
-              <CardTitle className="font-headline text-2xl sm:text-3xl text-primary">Send Us a Message</CardTitle>
+              <CardTitle className="font-headline text-2xl sm:text-3xl text-primary">
+                Send Us a Message
+              </CardTitle>
               <CardDescription>
-                Fill out the form below and we'll get back to you as soon as possible.
+                Fill out the form below and we'll get back to you as soon as
+                possible.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <ContactForm />
             </CardContent>
           </Card>
+        </div>
+      </SectionWrapper>
+
+      {/* Service Area Coverage Map */}
+      <SectionWrapper className="bg-secondary">
+        <div className="text-center mb-12">
+          <h2 className="font-headline text-3xl sm:text-4xl font-bold text-primary mb-4">
+            Service Area Coverage
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Check if we cover your area and get information about our service zones and any additional fees.
+          </p>
+        </div>
+        <div className="max-w-4xl mx-auto">
+          <ServiceAreaMap />
         </div>
       </SectionWrapper>
     </>

@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(docker:*)",
+      "Bash(ip route:*)",
+      "Bash(sudo ufw:*)",
+      "Bash(tailscale:*)",
+      "Bash(curl:*)",
+      "Bash(ip addr show:*)",
+      "Bash(wget:*)",
+      "Read(/etc/**)",
+      "Bash(ping:*)",
+      "Bash(chmod:*)",
+      "Bash(./start-servers.sh:*)"
+    ],
+    "deny": []
+  }
+}

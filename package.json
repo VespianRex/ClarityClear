@@ -26,6 +26,7 @@
     "test:all": "npm run test:ci && npm run test:e2e",
     "setup:pocketbase": "node scripts/setup-pocketbase.js",
     "pocketbase": "./pocketbase serve --http=0.0.0.0:8090",
+    "pocketbase:tailscale": "./pocketbase serve --http=100.73.114.121:8090",
     "pre-commit": "npm run typecheck && npm run lint:strict && npm run format:check && npm run test:ci"
   },
   "dependencies": {

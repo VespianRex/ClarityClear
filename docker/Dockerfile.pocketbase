@@ -1,0 +1,35 @@
+# Secure PocketBase Dockerfile
+FROM alpine:3.19
+
+# Install dependencies and security updates
+RUN apk add --no-cache \
+    ca-certificates \
+    unzip \
+    wget \
+    && apk upgrade --no-cache
+
+# Create non-root user
+RUN addgroup -S pocketbase && adduser -S pocketbase -G pocketbase
+
+# Download and install PocketBase
+WORKDIR /pb
+RUN wget https://github.com/pocketbase/pocketbase/releases/download/v0.22.0/pocketbase_0.22.0_linux_amd64.zip \
+    && unzip pocketbase_0.22.0_linux_amd64.zip \
+    && rm pocketbase_0.22.0_linux_amd64.zip \
+    && chmod +x pocketbase
+
+# Create data directory with proper permissions
+RUN mkdir -p /pb/pb_data /pb/pb_migrations \
+    && chown -R pocketbase:pocketbase /pb
+
+# Switch to non-root user
+USER pocketbase
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8090/api/health || exit 1
+
+EXPOSE 8090
+
+# Run with security flags
+CMD ["./pocketbase", "serve", "--http=0.0.0.0:8090"]
