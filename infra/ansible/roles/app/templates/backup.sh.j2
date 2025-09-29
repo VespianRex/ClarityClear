@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Backup script for Clarity application data
+
+export RESTIC_PASSWORD='{{ restic_password }}'
+REPO='{{ restic_repo | default("/opt/clarity/backups") }}'
+BACKUP_DATE=$(date +%Y%m%d_%H%M%S)
+
+# Log function
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a /var/log/clarity-backup.log
+}
+
+log "Starting backup..."
+
+# Stop containers for consistent backup (optional)
+# cd /opt/clarity && docker compose stop pocketbase
+
+# Backup PocketBase data
+log "Backing up PocketBase data..."
+restic backup \
+    --repo "$REPO" \
+    --tag "pocketbase" \
+    --tag "daily" \
+    --host "{{ inventory_hostname }}" \
+    /opt/clarity/pb_data
+
+# Backup app configuration
+log "Backing up application configuration..."
+restic backup \
+    --repo "$REPO" \
+    --tag "config" \
+    --tag "daily" \
+    --host "{{ inventory_hostname }}" \
+    /opt/clarity/web \
+    --exclude="node_modules" \
+    --exclude=".next" \
+    --exclude=".git"
+
+# Restart containers if stopped
+# cd /opt/clarity && docker compose start pocketbase
+
+# Cleanup old snapshots
+log "Cleaning up old snapshots..."
+restic forget \
+    --repo "$REPO" \
+    --keep-daily 7 \
+    --keep-weekly 4 \
+    --keep-monthly 6 \
+    --prune
+
+# Check repository
+restic check --repo "$REPO"
+
+log "Backup completed successfully"
+
+# Optional: Send notification
+# curl -X POST https://status.{{ domain_base }}/api/notify \
+#   -d "Clarity backup completed on {{ inventory_hostname }}"

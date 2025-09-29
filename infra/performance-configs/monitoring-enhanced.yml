@@ -1,0 +1,320 @@
+# Enhanced Monitoring Configuration with Performance Focus
+
+# Additional Prometheus scrape configs for application metrics
+scrape_configs:
+  # Next.js Application Metrics
+  - job_name: 'nextjs'
+    metrics_path: '/api/metrics'
+    static_configs:
+      - targets:
+          - 'clarity-app:3000'
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '([^:]+):.*'
+        target_label: instance
+        replacement: 'nextjs-${1}'
+
+  # PocketBase Custom Metrics
+  - job_name: 'pocketbase-custom'
+    metrics_path: '/api/metrics/custom'
+    static_configs:
+      - targets:
+          - 'clarity-app:8090'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # Redis Metrics Exporter
+  - job_name: 'redis'
+    static_configs:
+      - targets:
+          - 'redis-exporter:9121'
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '([^:]+):.*'
+        target_label: instance
+        replacement: 'redis-${1}'
+
+# Enhanced Alert Rules for Performance
+groups:
+  - name: application_performance
+    interval: 30s
+    rules:
+      # API Performance Alerts
+      - alert: HighAPILatency
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)
+          ) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "High API latency for {{ $labels.service }}"
+          description: "95th percentile latency is {{ $value }}s (threshold: 0.5s)"
+          runbook_url: "https://wiki.andub.go.ro/runbooks/high-api-latency"
+
+      - alert: CriticalAPILatency
+        expr: |
+          histogram_quantile(0.99,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)
+          ) > 2
+        for: 3m
+        labels:
+          severity: critical
+          category: performance
+        annotations:
+          summary: "Critical API latency for {{ $labels.service }}"
+          description: "99th percentile latency is {{ $value }}s (threshold: 2s)"
+
+      # Error Rate Alerts
+      - alert: HighErrorRate
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[5m])) by (service)
+          /
+          sum(rate(http_requests_total[5m])) by (service)
+          > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          category: availability
+        annotations:
+          summary: "High error rate for {{ $labels.service }}"
+          description: "Error rate is {{ $value | humanizePercentage }} (threshold: 5%)"
+
+      # Cache Performance
+      - alert: LowCacheHitRate
+        expr: |
+          sum(rate(redis_hits_total[5m]))
+          /
+          (sum(rate(redis_hits_total[5m])) + sum(rate(redis_misses_total[5m])))
+          < 0.8
+        for: 10m
+        labels:
+          severity: warning
+          category: performance
+        annotations:
+          summary: "Low Redis cache hit rate"
+          description: "Cache hit rate is {{ $value | humanizePercentage }} (threshold: 80%)"
+
+      # Database Performance
+      - alert: SlowDatabaseQueries
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(db_query_duration_seconds_bucket[5m])) by (le, query_type)
+          ) > 0.2
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "Slow database queries detected"
+          description: "95th percentile query time is {{ $value }}s for {{ $labels.query_type }}"
+
+      # Resource Saturation
+      - alert: ContainerMemoryPressure
+        expr: |
+          (sum(container_memory_working_set_bytes{name!=""}) by (name)
+          /
+          sum(container_spec_memory_limit_bytes{name!=""}) by (name)) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          category: resources
+        annotations:
+          summary: "Container {{ $labels.name }} memory pressure"
+          description: "Memory usage is {{ $value | humanizePercentage }} of limit"
+
+      # Connection Pool Saturation
+      - alert: ConnectionPoolSaturation
+        expr: |
+          (db_connections_active / db_connections_max) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "Database connection pool near saturation"
+          description: "{{ $value | humanizePercentage }} of connections in use"
+
+  - name: user_experience
+    interval: 60s
+    rules:
+      # Core Web Vitals
+      - alert: PoorLCP
+        expr: |
+          histogram_quantile(0.75,
+            sum(rate(web_vitals_lcp_seconds_bucket[10m])) by (le)
+          ) > 2.5
+        for: 10m
+        labels:
+          severity: warning
+          category: ux
+        annotations:
+          summary: "Poor Largest Contentful Paint (LCP)"
+          description: "75th percentile LCP is {{ $value }}s (good: <2.5s)"
+
+      - alert: PoorFID
+        expr: |
+          histogram_quantile(0.75,
+            sum(rate(web_vitals_fid_seconds_bucket[10m])) by (le)
+          ) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          category: ux
+        annotations:
+          summary: "Poor First Input Delay (FID)"
+          description: "75th percentile FID is {{ $value }}s (good: <100ms)"
+
+      - alert: PoorCLS
+        expr: |
+          histogram_quantile(0.75,
+            sum(rate(web_vitals_cls_bucket[10m])) by (le)
+          ) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          category: ux
+        annotations:
+          summary: "Poor Cumulative Layout Shift (CLS)"
+          description: "75th percentile CLS is {{ $value }} (good: <0.1)"
+
+  - name: slo_alerts
+    interval: 30s
+    rules:
+      # SLO-based Alerts
+      - alert: SLOBudgetBurn
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m])) by (service)
+            /
+            sum(rate(http_requests_total[5m])) by (service)
+          ) > (1 - 0.999) * 14.4
+        for: 5m
+        labels:
+          severity: critical
+          category: slo
+        annotations:
+          summary: "SLO budget burn rate too high for {{ $labels.service }}"
+          description: "At current error rate, monthly SLO budget will be exhausted in < 3 days"
+
+# Grafana Dashboard Configuration
+dashboards:
+  - name: "Application Performance Dashboard"
+    uid: "app-performance"
+    panels:
+      - title: "Request Rate"
+        type: graph
+        targets:
+          - expr: sum(rate(http_requests_total[5m])) by (service)
+
+      - title: "Response Time Distribution"
+        type: heatmap
+        targets:
+          - expr: sum(rate(http_request_duration_seconds_bucket[5m])) by (le)
+
+      - title: "Error Rate"
+        type: graph
+        targets:
+          - expr: sum(rate(http_requests_total{status=~"5.."}[5m])) by (service) / sum(rate(http_requests_total[5m])) by (service)
+
+      - title: "Cache Hit Rate"
+        type: stat
+        targets:
+          - expr: sum(rate(redis_hits_total[5m])) / (sum(rate(redis_hits_total[5m])) + sum(rate(redis_misses_total[5m])))
+
+      - title: "Core Web Vitals"
+        type: gauge
+        targets:
+          - expr: histogram_quantile(0.75, sum(rate(web_vitals_lcp_seconds_bucket[10m])) by (le))
+          - expr: histogram_quantile(0.75, sum(rate(web_vitals_fid_seconds_bucket[10m])) by (le))
+          - expr: histogram_quantile(0.75, sum(rate(web_vitals_cls_bucket[10m])) by (le))
+
+      - title: "Database Query Performance"
+        type: graph
+        targets:
+          - expr: histogram_quantile(0.95, sum(rate(db_query_duration_seconds_bucket[5m])) by (le, query_type))
+
+      - title: "Container Resource Usage"
+        type: graph
+        targets:
+          - expr: sum(container_memory_working_set_bytes{name!=""}) by (name)
+          - expr: sum(rate(container_cpu_usage_seconds_total{name!=""}[5m])) by (name)
+
+      - title: "SLO Burn Rate"
+        type: graph
+        targets:
+          - expr: (sum(rate(http_requests_total{status=~"5.."}[5m])) by (service) / sum(rate(http_requests_total[5m])) by (service)) / (1 - 0.999)
+
+# Loki Configuration for Performance Logs
+loki_config:
+  query_range:
+    align_queries_with_step: true
+    max_retries: 5
+    cache_results: true
+    results_cache:
+      cache:
+        enable_fifocache: true
+        fifocache:
+          max_size_items: 1024
+          ttl: 24h
+
+  limits_config:
+    enforce_metric_name: false
+    reject_old_samples: true
+    reject_old_samples_max_age: 168h
+    ingestion_rate_mb: 10
+    ingestion_burst_size_mb: 20
+    max_query_series: 5000
+    max_query_parallelism: 32
+
+  # Log patterns for performance analysis
+  ruler:
+    storage:
+      type: local
+      local:
+        directory: /loki/rules
+    rule_path: /loki/scratch
+    alertmanager_url: http://alertmanager:9093
+    ring:
+      kvstore:
+        store: inmemory
+    enable_api: true
+
+# Recording Rules for Performance Metrics
+recording_rules:
+  - name: performance_aggregates
+    interval: 30s
+    rules:
+      # API Performance Aggregates
+      - record: service:http_request_duration_seconds:p95_5m
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)
+          )
+
+      - record: service:http_request_duration_seconds:p99_5m
+        expr: |
+          histogram_quantile(0.99,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)
+          )
+
+      - record: service:http_error_rate:5m
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[5m])) by (service)
+          /
+          sum(rate(http_requests_total[5m])) by (service)
+
+      - record: service:http_request_rate:5m
+        expr: sum(rate(http_requests_total[5m])) by (service)
+
+      # Resource Usage Aggregates
+      - record: container:memory_usage_percentage
+        expr: |
+          (sum(container_memory_working_set_bytes{name!=""}) by (name)
+          /
+          sum(container_spec_memory_limit_bytes{name!=""}) by (name)) * 100
+
+      - record: container:cpu_usage_cores
+        expr: sum(rate(container_cpu_usage_seconds_total{name!=""}[5m])) by (name)

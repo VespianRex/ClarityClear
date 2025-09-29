@@ -1,0 +1,46 @@
+# Alternative using bpg/proxmox provider (more actively maintained)
+# This provider has better permission handling and is more up to date
+
+terraform {
+  required_version = ">= 1.0"
+
+  required_providers {
+    proxmox = {
+      source  = "bpg/proxmox"
+      version = "~> 0.38"  # Latest stable version
+    }
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.4"
+    }
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.2"
+    }
+  }
+}
+
+provider "proxmox" {
+  endpoint = var.pm_api_url  # https://192.168.0.33:8006/
+
+  # Use username/password authentication
+  username = var.pm_user      # root@pam
+  password = var.pm_password  # password
+
+  # Or use API token (recommended)
+  # api_token = "root@pam!terraform=<token-secret>"
+
+  # Skip TLS verification for self-signed certificates
+  insecure = true
+
+  # SSH configuration for operations requiring SSH
+  ssh {
+    agent    = false
+    username = "root"
+    password = var.pm_password
+    node {
+      name    = "prox00"
+      address = "192.168.0.33"
+    }
+  }
+}

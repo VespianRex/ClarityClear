@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Automated VM backup to PBS
+
+PBS_SERVER="localhost"
+PBS_DATASTORE="clarity-backups"
+PBS_USER="backup-admin@pbs"
+LOG_FILE="/var/log/pbs-backup.log"
+
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
+}
+
+log "Starting VM backup job..."
+
+# Get list of all VMs
+VMS=$(pvesh get /cluster/resources --type vm --output-format json | jq -r '.[] | select(.status=="running") | .vmid')
+
+for VMID in $VMS; do
+    VM_NAME=$(pvesh get /nodes/{{ ansible_hostname }}/qemu/$VMID/config --output-format json | jq -r '.name // "vm-'$VMID'"')
+
+    log "Backing up VM $VMID ($VM_NAME)..."
+
+    # Perform backup
+    if vzdump "$VMID" \
+        --storage pbs \
+        --mode snapshot \
+        --compress zstd \
+        --notes "Automated backup $(date +%Y%m%d)" \
+        --mailto {{ letsencrypt_email }} \
+        --mailnotification failure; then
+        log "Successfully backed up $VM_NAME"
+    else
+        log "ERROR: Failed to backup $VM_NAME"
+    fi
+done
+
+log "VM backup job completed"
+
+# Cleanup old backups
+log "Cleaning up old backups..."
+proxmox-backup-manager garbage-collection run clarity-backups
+
+log "Backup maintenance completed"

@@ -1,0 +1,18 @@
+---
+# Handlers for App role
+
+- name: restart app
+  command: docker compose restart
+  args:
+    chdir: /opt/clarity
+
+- name: reload nginx
+  service:
+    name: nginx
+    state: reloaded
+  ignore_errors: yes
+
+- name: restart docker
+  service:
+    name: docker
+    state: restarted

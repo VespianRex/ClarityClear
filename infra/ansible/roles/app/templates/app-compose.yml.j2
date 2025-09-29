@@ -1,0 +1,71 @@
+version: '3.8'
+
+networks:
+  app:
+    driver: bridge
+
+services:
+  pocketbase:
+    image: ghcr.io/pocketbase/pocketbase:latest
+    container_name: pocketbase
+    restart: unless-stopped
+    networks:
+      - app
+    ports:
+      - "8090:8090"
+    volumes:
+      - /opt/clarity/pb_data:/pb_data
+      - /opt/clarity/pb_migrations:/pb_migrations
+    command:
+      - serve
+      - --http=0.0.0.0:8090
+      - --dir=/pb_data
+      - --migrationsDir=/pb_migrations
+    environment:
+      - PB_ENCRYPTION_KEY={{ lookup('password', '/dev/null length=32 chars=ascii_letters,digits') }}
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8090/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  web:
+    build: ./web
+    container_name: clarity-web
+    restart: unless-stopped
+    networks:
+      - app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - pocketbase
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_PB_URL=http://pocketbase:8090
+      - PB_URL=http://pocketbase:8090
+      - NEXT_TELEMETRY_DISABLED=1
+    volumes:
+      - /opt/clarity/web:/app:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: Redis for sessions
+  redis:
+    image: redis:alpine
+    container_name: clarity-redis
+    restart: unless-stopped
+    networks:
+      - app
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - /opt/clarity/redis:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

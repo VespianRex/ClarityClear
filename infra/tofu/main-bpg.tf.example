@@ -1,0 +1,240 @@
+# VM deployment using bpg/proxmox provider
+# This provider has better compatibility and more features
+
+# Data source to reference the template
+data "proxmox_virtual_machines" "debian_template" {
+  node_name = "prox00"
+
+  filter {
+    name   = "id"
+    values = ["9000"]  # Debian template ID
+  }
+}
+
+data "proxmox_virtual_machines" "alpine_template" {
+  node_name = "prox00"
+
+  filter {
+    name   = "id"
+    values = ["9001"]  # Alpine template ID
+  }
+}
+
+# Edge VM A (Alpine)
+resource "proxmox_virtual_machine" "edge_a" {
+  name      = var.edge_a_name
+  node_name = var.node
+  vm_id     = 201
+
+  # Clone from template
+  clone {
+    vm_id = 9001  # Alpine template
+    mode  = "full"
+  }
+
+  # Hardware configuration
+  cpu {
+    cores = 2
+    type  = "host"
+  }
+
+  memory {
+    dedicated = 2048
+    floating  = 1024  # balloon
+  }
+
+  # Agent
+  agent {
+    enabled = true
+    trim    = true
+  }
+
+  # Network
+  network_device {
+    bridge = var.bridge
+    model  = "virtio"
+  }
+
+  # Cloud-init
+  initialization {
+    user_account {
+      username = var.admin_user
+      keys     = [var.ssh_pubkey]
+    }
+
+    ip_config {
+      ipv4 {
+        address = "dhcp"
+      }
+    }
+
+    dns {
+      servers = ["192.168.0.1"]
+      domain  = "andub.go.ro"
+    }
+  }
+
+  # Boot settings
+  boot_order = ["scsi0"]
+  on_boot    = true
+}
+
+# Edge VM B (Alpine)
+resource "proxmox_virtual_machine" "edge_b" {
+  name      = var.edge_b_name
+  node_name = var.node
+  vm_id     = 202
+
+  clone {
+    vm_id = 9001  # Alpine template
+    mode  = "full"
+  }
+
+  cpu {
+    cores = 2
+    type  = "host"
+  }
+
+  memory {
+    dedicated = 2048
+    floating  = 1024
+  }
+
+  agent {
+    enabled = true
+    trim    = true
+  }
+
+  network_device {
+    bridge = var.bridge
+    model  = "virtio"
+  }
+
+  initialization {
+    user_account {
+      username = var.admin_user
+      keys     = [var.ssh_pubkey]
+    }
+
+    ip_config {
+      ipv4 {
+        address = "dhcp"
+      }
+    }
+
+    dns {
+      servers = ["192.168.0.1"]
+      domain  = "andub.go.ro"
+    }
+  }
+
+  boot_order = ["scsi0"]
+  on_boot    = true
+}
+
+# App VM (Debian)
+resource "proxmox_virtual_machine" "app" {
+  name      = var.app_name
+  node_name = var.node
+  vm_id     = 203
+
+  clone {
+    vm_id = 9000  # Debian template
+    mode  = "full"
+  }
+
+  cpu {
+    cores = 4
+    type  = "host"
+  }
+
+  memory {
+    dedicated = 8192
+    floating  = 4096
+  }
+
+  agent {
+    enabled = true
+    trim    = true
+  }
+
+  network_device {
+    bridge = var.bridge
+    model  = "virtio"
+  }
+
+  initialization {
+    user_account {
+      username = var.admin_user
+      keys     = [var.ssh_pubkey]
+    }
+
+    ip_config {
+      ipv4 {
+        address = "dhcp"
+      }
+    }
+
+    dns {
+      servers = ["192.168.0.1"]
+      domain  = "andub.go.ro"
+    }
+  }
+
+  boot_order = ["scsi0"]
+  on_boot    = true
+}
+
+# NFS Server VM (Debian) with static IP
+resource "proxmox_virtual_machine" "nfs" {
+  name      = var.nfs_name
+  node_name = var.node
+  vm_id     = 200
+
+  clone {
+    vm_id = 9000  # Debian template
+    mode  = "full"
+  }
+
+  cpu {
+    cores = 1
+    type  = "host"
+  }
+
+  memory {
+    dedicated = 1024
+    floating  = 512
+  }
+
+  agent {
+    enabled = true
+    trim    = true
+  }
+
+  network_device {
+    bridge = var.bridge
+    model  = "virtio"
+  }
+
+  initialization {
+    user_account {
+      username = var.admin_user
+      keys     = [var.ssh_pubkey]
+    }
+
+    ip_config {
+      ipv4 {
+        address = "192.168.0.55/24"
+        gateway = "192.168.0.1"
+      }
+    }
+
+    dns {
+      servers = ["192.168.0.1"]
+      domain  = "andub.go.ro"
+    }
+  }
+
+  boot_order = ["scsi0"]
+  on_boot    = true
+}

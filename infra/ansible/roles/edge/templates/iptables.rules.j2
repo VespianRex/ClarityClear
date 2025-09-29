@@ -1,0 +1,24 @@
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [0:0]
+
+# Allow established sessions and loopback
+-A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+-A INPUT -i lo -j ACCEPT
+-A INPUT -p icmp -j ACCEPT
+
+# Permit SSH from LAN and management subnet
+-A INPUT -s {{ lan_subnet | default('192.168.0.0/24') }} -p tcp --dport 22 -j ACCEPT
+
+# Permit public-facing ports
+-A INPUT -p tcp -m multiport --dports 22,80,443 -j ACCEPT
+-A INPUT -p udp --dport {{ vpn_port | default('1194') }} -j ACCEPT
+
+# Allow VRRP for keepalived
+-A INPUT -p vrrp -j ACCEPT
+
+# Reject everything else
+-A INPUT -j DROP
+
+COMMIT

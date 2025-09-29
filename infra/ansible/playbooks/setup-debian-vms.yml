@@ -1,0 +1,121 @@
+---
+- name: Configure Debian VMs
+  hosts: debian_vms
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install essential packages
+      apt:
+        name:
+          - curl
+          - wget
+          - git
+          - vim
+          - htop
+          - net-tools
+          - nfs-common
+          - qemu-guest-agent
+        state: present
+
+    - name: Start and enable qemu-guest-agent
+      systemd:
+        name: qemu-guest-agent
+        state: started
+        enabled: yes
+
+    - name: Create mount point for NFS
+      file:
+        path: /mnt/shared
+        state: directory
+        mode: '0755'
+
+    - name: Mount NFS share from Synology
+      mount:
+        path: /mnt/shared
+        src: "{{ nfs_server }}:{{ nfs_export }}"
+        fstype: nfs
+        opts: defaults,_netdev
+        state: mounted
+
+- name: Configure Application VM
+  hosts: clarity-app
+  become: yes
+  tasks:
+    - name: Install Docker
+      block:
+        - name: Install Docker dependencies
+          apt:
+            name:
+              - ca-certificates
+              - gnupg
+              - lsb-release
+            state: present
+
+        - name: Add Docker GPG key
+          apt_key:
+            url: https://download.docker.com/linux/debian/gpg
+            state: present
+
+        - name: Add Docker repository
+          apt_repository:
+            repo: "deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
+            state: present
+
+        - name: Install Docker
+          apt:
+            name:
+              - docker-ce
+              - docker-ce-cli
+              - containerd.io
+              - docker-compose-plugin
+            state: present
+
+        - name: Start Docker service
+          systemd:
+            name: docker
+            state: started
+            enabled: yes
+
+- name: Configure Monitoring VM
+  hosts: monitoring
+  become: yes
+  tasks:
+    - name: Install monitoring stack dependencies
+      apt:
+        name:
+          - prometheus
+          - grafana
+        state: present
+
+    - name: Start monitoring services
+      systemd:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      loop:
+        - prometheus
+        - grafana-server
+
+- name: Configure PBS Backup VM
+  hosts: pbs-backup
+  become: yes
+  tasks:
+    - name: Add Proxmox Backup Server repository
+      block:
+        - name: Add PBS GPG key
+          apt_key:
+            url: https://enterprise.proxmox.com/debian/proxmox-release-bookworm.gpg
+            state: present
+
+        - name: Add PBS repository
+          apt_repository:
+            repo: "deb http://download.proxmox.com/debian/pbs bookworm pbs-no-subscription"
+            state: present
+
+        - name: Update apt cache
+          apt:
+            update_cache: yes

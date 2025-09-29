@@ -1,0 +1,30 @@
+[DEFAULT]
+bantime = 3600
+findtime = 600
+maxretry = 5
+destemail = {{ letsencrypt_email }}
+sender = fail2ban@{{ domain_base }}
+action = %(action_mwl)s
+
+[sshd]
+enabled = true
+port = ssh
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 3
+
+[traefik]
+enabled = true
+port = http,https
+filter = traefik-auth
+logpath = /var/log/traefik.log
+maxretry = 5
+
+[traefik-ratelimit]
+enabled = true
+port = http,https
+filter = traefik-ratelimit
+logpath = /var/log/access.log
+maxretry = 100
+findtime = 60
+bantime = 600

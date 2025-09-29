@@ -1,0 +1,32 @@
+---
+# Handlers for Monitoring role
+
+- name: restart prometheus
+  docker_container:
+    name: prometheus
+    restart: yes
+
+- name: restart grafana
+  docker_container:
+    name: grafana
+    restart: yes
+
+- name: restart loki
+  docker_container:
+    name: loki
+    restart: yes
+
+- name: restart promtail
+  docker_container:
+    name: promtail
+    restart: yes
+
+- name: restart monitoring
+  command: docker compose restart
+  args:
+    chdir: /opt/monitoring
+
+- name: restart uptime-kuma
+  command: docker compose restart
+  args:
+    chdir: /opt/uptime-kuma

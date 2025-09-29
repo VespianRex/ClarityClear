@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  traefik:
+    image: traefik:v3.1
+    container_name: traefik
+    restart: unless-stopped
+
+    security_opt:
+      - no-new-privileges:true
+
+    networks:
+      - proxy
+
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Dashboard (internal only)
+
+    environment:
+      - CF_API_EMAIL={{ letsencrypt_email }}
+
+    volumes:
+      - /opt/edge-shared/traefik/acme.json:/letsencrypt/acme.json
+      - /opt/traefik/traefik.yml:/traefik.yml:ro
+      - /opt/traefik/conf:/conf:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+    labels:
+      - "traefik.enable=true"
+      # Dashboard
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.{{ domain_base }}`)"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls.certresolver=le"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.middlewares=auth,secure-headers"
+      # Middleware
+      - "traefik.http.middlewares.auth.basicauth.users={{ traefik_auth | default('admin:$2y$10$...') }}"
+
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+networks:
+  proxy:
+    external: true

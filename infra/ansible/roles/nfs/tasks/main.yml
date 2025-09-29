@@ -1,0 +1,81 @@
+---
+# NFS Server configuration
+
+- name: Install NFS server packages
+  apt:
+    name:
+      - nfs-kernel-server
+      - nfs-common
+      - ufw
+    state: present
+    update_cache: yes
+
+# Create export directories
+- name: Create NFS export directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0777'
+    owner: nobody
+    group: nogroup
+  loop:
+    - /export
+    - /export/edge-shared
+    - /export/edge-shared/traefik
+    - /export/edge-shared/amnezia
+    - /export/edge-shared/amnezia/data
+
+# Configure NFS exports
+- name: Configure NFS exports
+  lineinfile:
+    path: /etc/exports
+    line: "{{ item }}"
+    create: yes
+  loop:
+    - "/export/edge-shared {{ lan_subnet }}(rw,sync,no_subtree_check,no_root_squash)"
+    - "/export/edge-shared/traefik {{ lan_subnet }}(rw,sync,no_subtree_check,no_root_squash)"
+    - "/export/edge-shared/amnezia {{ lan_subnet }}(rw,sync,no_subtree_check,no_root_squash)"
+  notify: restart nfs
+
+# Configure UFW
+- name: Configure UFW defaults
+  ufw:
+    direction: "{{ item.direction }}"
+    policy: "{{ item.policy }}"
+  loop:
+    - { direction: 'incoming', policy: 'deny' }
+    - { direction: 'outgoing', policy: 'allow' }
+
+- name: Allow SSH from LAN
+  ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+    src: "{{ lan_subnet }}"
+
+- name: Allow NFS from LAN
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: any
+    src: "{{ lan_subnet }}"
+  loop:
+    - '111'   # portmapper
+    - '2049'  # NFS
+    - '20048' # mountd
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+
+# Start NFS server
+- name: Enable and start NFS server
+  systemd:
+    name: nfs-kernel-server
+    state: started
+    enabled: yes
+
+# Export the filesystems
+- name: Export filesystems
+  command: exportfs -ra
+  changed_when: false

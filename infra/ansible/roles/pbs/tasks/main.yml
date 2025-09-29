@@ -1,0 +1,147 @@
+---
+# Proxmox Backup Server installation and configuration
+
+- name: Install prerequisites
+  apt:
+    name:
+      - wget
+      - apt-transport-https
+      - ca-certificates
+      - gnupg
+      - lsb-release
+      - ufw
+    state: present
+    update_cache: yes
+
+# Add PBS repository
+- name: Add Proxmox repository key
+  apt_key:
+    url: https://enterprise.proxmox.com/debian/proxmox-release-bookworm.gpg
+    state: present
+
+- name: Add PBS repository
+  apt_repository:
+    repo: "deb http://download.proxmox.com/debian/pbs bookworm pbs-no-subscription"
+    state: present
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install Proxmox Backup Server
+  apt:
+    name:
+      - proxmox-backup-server
+    state: present
+
+# Configure PBS
+- name: Configure PBS datastore
+  shell: |
+    # Create datastore if not exists
+    if ! proxmox-backup-manager datastore list | grep -q clarity-backups; then
+      proxmox-backup-manager datastore create clarity-backups /var/lib/proxmox-backup/datastore
+    fi
+  register: datastore_result
+
+- name: Create PBS admin user
+  shell: |
+    # Create user if not exists
+    if ! proxmox-backup-manager user list | grep -q backup-admin; then
+      proxmox-backup-manager user create backup-admin@pbs --password '{{ pbs_admin_password | default("ChangeMe123!") }}'
+      proxmox-backup-manager acl update / Admin --auth-id backup-admin@pbs
+    fi
+  when: pbs_admin_password is defined
+
+# Configure firewall
+- name: Configure UFW defaults
+  ufw:
+    direction: "{{ item.direction }}"
+    policy: "{{ item.policy }}"
+  loop:
+    - { direction: 'incoming', policy: 'deny' }
+    - { direction: 'outgoing', policy: 'allow' }
+
+- name: Allow SSH from LAN
+  ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+    src: "{{ lan_subnet }}"
+
+- name: Allow PBS web interface from LAN
+  ufw:
+    rule: allow
+    port: '8007'
+    proto: tcp
+    src: "{{ lan_subnet }}"
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+
+# Configure backup jobs for VMs
+- name: Create VM backup script
+  template:
+    src: backup-vms.sh.j2
+    dest: /usr/local/bin/backup-vms
+    mode: '0755'
+
+- name: Schedule VM backup cron job
+  cron:
+    name: "Backup all VMs to PBS"
+    minute: "0"
+    hour: "1"
+    job: "/usr/local/bin/backup-vms"
+    user: root
+
+# Configure retention policy
+- name: Set PBS retention policy
+  shell: |
+    proxmox-backup-manager datastore update clarity-backups \
+      --keep-daily 7 \
+      --keep-weekly 4 \
+      --keep-monthly 6 \
+      --keep-yearly 1
+
+# Enable and start PBS services
+- name: Ensure PBS services are running
+  systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  loop:
+    - proxmox-backup
+    - proxmox-backup-proxy
+
+# Create backup validation script
+- name: Create backup validation script
+  template:
+    src: validate-backups.sh.j2
+    dest: /usr/local/bin/validate-backups
+    mode: '0755'
+
+- name: Schedule backup validation
+  cron:
+    name: "Validate PBS backups"
+    minute: "0"
+    hour: "6"
+    weekday: "0"  # Sunday
+    job: "/usr/local/bin/validate-backups"
+    user: root
+
+# Node Exporter for monitoring
+- name: Install Node Exporter
+  docker_container:
+    name: node-exporter
+    image: prom/node-exporter:latest
+    state: started
+    restart_policy: unless-stopped
+    network_mode: host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($|/)'

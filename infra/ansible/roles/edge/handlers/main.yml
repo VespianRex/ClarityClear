@@ -1,0 +1,32 @@
+---
+# Handlers for Edge role
+
+- name: restart keepalived
+  service:
+    name: keepalived
+    state: restarted
+    use: openrc
+
+- name: restart traefik
+  command: docker compose restart
+  args:
+    chdir: /opt/traefik
+  when: not ansible_check_mode
+
+- name: restart amnezia
+  command: docker compose restart
+  args:
+    chdir: /opt/amnezia
+  when: not ansible_check_mode
+
+- name: restart fail2ban
+  service:
+    name: fail2ban
+    state: restarted
+    use: openrc
+
+- name: reload iptables
+  service:
+    name: iptables
+    state: restarted
+    use: openrc

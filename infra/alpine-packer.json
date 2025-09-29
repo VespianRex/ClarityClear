@@ -1,0 +1,42 @@
+{
+  "builders": [{
+    "type": "qemu",
+    "iso_url": "https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/x86_64/alpine-virt-3.20.3-x86_64.iso",
+    "iso_checksum": "sha256:5a36304ecf039292082d92b48152a9ec21009ceb8a9626b2e9b3c7a4a1e6fe48",
+    "output_directory": "output-alpine",
+    "shutdown_command": "poweroff",
+    "disk_size": "5000M",
+    "format": "qcow2",
+    "accelerator": "kvm",
+    "http_directory": "http",
+    "ssh_username": "root",
+    "ssh_password": "alpine",
+    "ssh_timeout": "20m",
+    "vm_name": "alpine-ssh-packer",
+    "net_device": "virtio-net",
+    "disk_interface": "virtio",
+    "boot_wait": "10s",
+    "boot_command": [
+      "root<enter><wait>",
+      "ifconfig eth0 up && udhcpc -i eth0<enter><wait5>",
+      "wget http://{{ .HTTPIP }}:{{ .HTTPPort }}/answers<enter><wait>",
+      "setup-alpine -f answers<enter><wait5>",
+      "alpine<enter><wait>",
+      "alpine<enter><wait>",
+      "<wait10>",
+      "y<enter>",
+      "<wait10>",
+      "reboot<enter>"
+    ]
+  }],
+  "provisioners": [{
+    "type": "shell",
+    "scripts": [
+      "scripts/alpine-setup.sh"
+    ]
+  }],
+  "post-processors": [{
+    "type": "compress",
+    "output": "alpine-ssh-{{.Provider}}.tar.gz"
+  }]
+}

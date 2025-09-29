@@ -1,0 +1,75 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'clarity-monitoring'
+    environment: 'production'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+rule_files:
+  - "alert-rules.yml"
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Node Exporter - All VMs
+  - job_name: 'node'
+    static_configs:
+      - targets:
+{% for host in groups['all'] %}
+          - '{{ hostvars[host]['ansible_host'] }}:9100'
+{% endfor %}
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: '([^:]+):.*'
+        target_label: instance
+        replacement: '${1}'
+
+  # Docker containers
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets:
+{% for host in groups['all'] %}
+          - '{{ hostvars[host]['ansible_host'] }}:8080'
+{% endfor %}
+
+  # Traefik metrics
+  - job_name: 'traefik'
+    static_configs:
+      - targets:
+{% for host in groups['edge'] %}
+          - '{{ hostvars[host]['ansible_host'] }}:8082'
+{% endfor %}
+
+  # Loki
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['localhost:3100']
+
+  # Grafana
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['localhost:3000']
+
+  # PocketBase (if it exposes metrics)
+  - job_name: 'pocketbase'
+    static_configs:
+      - targets:
+          - '{{ app_ip }}:8090'
+    metrics_path: '/api/metrics'
+
+  # Keepalived/VRRP status (custom exporter)
+  - job_name: 'keepalived'
+    static_configs:
+      - targets:
+{% for host in groups['edge'] %}
+          - '{{ hostvars[host]['ansible_host'] }}:9165'
+{% endfor %}

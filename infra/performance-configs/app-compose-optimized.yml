@@ -1,0 +1,224 @@
+version: '3.8'
+
+networks:
+  app:
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-app
+      com.docker.network.driver.mtu: 1450  # Optimize for network performance
+
+services:
+  pocketbase:
+    image: ghcr.io/pocketbase/pocketbase:latest
+    container_name: pocketbase
+    restart: unless-stopped
+    networks:
+      - app
+    ports:
+      - "8090:8090"
+    volumes:
+      - /opt/clarity/pb_data:/pb_data
+      - /opt/clarity/pb_migrations:/pb_migrations
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 100M
+    command:
+      - serve
+      - --http=0.0.0.0:8090
+      - --dir=/pb_data
+      - --migrationsDir=/pb_migrations
+      - --dev=false
+      - --indexFallback=true
+      - --publicDir=/pb_public
+    environment:
+      - PB_ENCRYPTION_KEY=${PB_ENCRYPTION_KEY}
+      - GOGC=100  # Tune Go garbage collector
+      - GOMEMLIMIT=1800MiB  # Set memory limit for Go runtime
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8090/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=8090"
+      - "prometheus.io/path=/api/metrics"
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+    container_name: clarity-web
+    restart: unless-stopped
+    networks:
+      - app
+    ports:
+      - "3000:3000"
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_PB_URL=http://pocketbase:8090
+      - PB_URL=http://pocketbase:8090
+      - REDIS_URL=redis://redis:6379
+      - NEXT_TELEMETRY_DISABLED=1
+      - NODE_OPTIONS="--max-old-space-size=2048"  # Optimize Node.js memory
+    volumes:
+      - /opt/clarity/web/.next/cache:/app/.next/cache:ro  # Cache volume for faster builds
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 200M
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 3G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=3000"
+      - "prometheus.io/path=/api/metrics"
+
+  redis:
+    image: redis:7-alpine
+    container_name: clarity-redis
+    restart: unless-stopped
+    networks:
+      - app
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - /opt/clarity/redis:/data
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 50M
+    command:
+      - redis-server
+      - --appendonly yes
+      - --maxmemory 512mb
+      - --maxmemory-policy allkeys-lru
+      - --tcp-backlog 511
+      - --tcp-keepalive 60
+      - --timeout 300
+      - --databases 2  # Minimize database count
+      - --save 900 1  # Save after 900 sec if at least 1 key changed
+      - --save 300 10  # Save after 300 sec if at least 10 keys changed
+      - --save 60 10000  # Save after 60 sec if at least 10000 keys changed
+      - --rdbcompression yes
+      - --rdbchecksum yes
+      - --replica-read-only yes
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 768M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    sysctls:
+      - net.core.somaxconn=1024  # Increase connection backlog
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=6379"
+
+  # Redis Exporter for Prometheus
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: redis-exporter
+    restart: unless-stopped
+    networks:
+      - app
+    ports:
+      - "127.0.0.1:9121:9121"
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+      - REDIS_EXPORTER_CHECK_KEYS=*
+      - REDIS_EXPORTER_CHECK_SINGLE_KEYS=*
+    depends_on:
+      - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+
+  # Optional: Node.js APM Agent
+  apm-agent:
+    image: elastic/apm-agent-nodejs:latest
+    container_name: apm-agent
+    restart: unless-stopped
+    networks:
+      - app
+    environment:
+      - ELASTIC_APM_SERVICE_NAME=clarity-app
+      - ELASTIC_APM_SECRET_TOKEN=${APM_SECRET_TOKEN}
+      - ELASTIC_APM_SERVER_URL=${APM_SERVER_URL:-http://localhost:8200}
+      - ELASTIC_APM_ENVIRONMENT=production
+      - ELASTIC_APM_TRANSACTION_SAMPLE_RATE=0.1
+      - ELASTIC_APM_CAPTURE_BODY=errors
+      - ELASTIC_APM_CAPTURE_HEADERS=true
+      - ELASTIC_APM_METRICS_INTERVAL=30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 128M
+
+# Volume configuration with performance optimizations
+volumes:
+  pb_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/clarity/pb_data
+
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/clarity/redis
+
+  next_cache:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/clarity/web/.next/cache

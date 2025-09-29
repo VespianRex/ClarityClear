@@ -1,0 +1,52 @@
+# Alternative Provider Configuration using API Token
+# To use this approach:
+# 1. Create an API token in Proxmox:
+#    pveum user token add root@pam terraform -expire 0 -privsep 0
+#    (This will output a token ID and secret)
+#
+# 2. Rename this file to provider.tf (backup existing first)
+# 3. Update terraform.tfvars with token credentials
+
+terraform {
+  required_version = ">= 1.0"
+
+  required_providers {
+    proxmox = {
+      source  = "telmate/proxmox"
+      version = "~> 3.0"
+    }
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.4"
+    }
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.2"
+    }
+  }
+}
+
+provider "proxmox" {
+  # API connection
+  pm_api_url          = var.pm_api_url
+
+  # Token-based authentication (more reliable)
+  pm_api_token_id     = var.pm_api_token_id     # e.g., "root@pam!terraform"
+  pm_api_token_secret = var.pm_api_token_secret  # the token secret from pveum command
+
+  # TLS settings
+  pm_tls_insecure     = true
+
+  # Performance settings
+  pm_parallel         = 2
+  pm_timeout          = 600
+
+  # Debug logging
+  pm_log_enable       = true
+  pm_log_file         = "terraform-plugin-proxmox.log"
+  pm_debug            = true
+  pm_log_levels = {
+    _default    = "debug"
+    _capturelog = ""
+  }
+}

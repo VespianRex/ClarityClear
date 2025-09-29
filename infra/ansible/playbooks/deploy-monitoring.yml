@@ -1,0 +1,133 @@
+---
+- name: Deploy Monitoring Stack
+  hosts: monitoring
+  become: yes
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install Docker dependencies
+      apt:
+        name:
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/debian/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
+        state: present
+
+    - name: Install Docker
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: present
+
+    - name: Start Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Create monitoring directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - /opt/monitoring
+        - /opt/monitoring/prometheus
+        - /opt/monitoring/grafana
+        - /opt/monitoring/loki
+
+    - name: Create Prometheus config
+      copy:
+        dest: /opt/monitoring/prometheus/prometheus.yml
+        content: |
+          global:
+            scrape_interval: 15s
+
+          scrape_configs:
+            - job_name: 'prometheus'
+              static_configs:
+                - targets: ['localhost:9090']
+
+            - job_name: 'node'
+              static_configs:
+                - targets:
+                  - '192.168.0.180:9100'  # App VM
+                  - '192.168.0.207:9100'  # Monitoring VM
+                  - '192.168.0.242:9100'  # PBS VM
+                  - '192.168.0.144:9100'  # NFS VM
+                  - '192.168.0.163:9100'  # Edge-A
+                  - '192.168.0.236:9100'  # Edge-B
+
+    - name: Create Docker Compose for monitoring stack
+      copy:
+        dest: /opt/monitoring/docker-compose.yml
+        content: |
+          version: '3.8'
+
+          services:
+            prometheus:
+              image: prom/prometheus:latest
+              container_name: prometheus
+              ports:
+                - "9090:9090"
+              volumes:
+                - ./prometheus:/etc/prometheus
+                - prometheus_data:/prometheus
+              command:
+                - '--config.file=/etc/prometheus/prometheus.yml'
+                - '--storage.tsdb.path=/prometheus'
+                - '--web.console.libraries=/etc/prometheus/console_libraries'
+                - '--web.console.templates=/etc/prometheus/consoles'
+                - '--storage.tsdb.retention.time=200h'
+                - '--web.enable-lifecycle'
+              restart: unless-stopped
+
+            grafana:
+              image: grafana/grafana:latest
+              container_name: grafana
+              ports:
+                - "3000:3000"
+              environment:
+                - GF_SECURITY_ADMIN_PASSWORD=admin123
+              volumes:
+                - grafana_data:/var/lib/grafana
+              restart: unless-stopped
+
+            loki:
+              image: grafana/loki:latest
+              container_name: loki
+              ports:
+                - "3100:3100"
+              command: -config.file=/etc/loki/local-config.yaml
+              restart: unless-stopped
+
+          volumes:
+            prometheus_data:
+            grafana_data:
+
+    - name: Start monitoring stack
+      shell: cd /opt/monitoring && docker compose up -d
+      args:
+        creates: /opt/monitoring/.deployed
+
+    - name: Mark as deployed
+      file:
+        path: /opt/monitoring/.deployed
+        state: touch

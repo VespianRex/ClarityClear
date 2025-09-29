@@ -1,0 +1,163 @@
+---
+# Application VM configuration with Next.js + PocketBase
+
+- name: Install base packages
+  apt:
+    name:
+      - docker.io
+      - docker-compose-plugin
+      - curl
+      - ca-certificates
+      - ufw
+      - git
+      - nodejs
+      - npm
+      - restic
+    state: present
+    update_cache: yes
+
+- name: Enable Docker
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+# UFW Firewall - only allow from Edge VIP
+- name: Configure UFW defaults
+  ufw:
+    direction: "{{ item.direction }}"
+    policy: "{{ item.policy }}"
+  loop:
+    - { direction: 'incoming', policy: 'deny' }
+    - { direction: 'outgoing', policy: 'allow' }
+
+- name: Allow SSH from LAN
+  ufw:
+    rule: allow
+    port: '22'
+    proto: tcp
+    src: "{{ lan_subnet }}"
+
+- name: Allow app ports from Edge VMs only
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+    src: "{{ edge_vip }}"
+  loop:
+    - '3000'  # Next.js
+    - '8090'  # PocketBase
+
+- name: Allow monitoring scraping
+  ufw:
+    rule: allow
+    port: '9100'
+    proto: tcp
+    src: "{{ monitoring_ip }}"
+
+- name: Enable UFW
+  ufw:
+    state: enabled
+
+# Create application structure
+- name: Create application directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /opt/clarity
+    - /opt/clarity/web
+    - /opt/clarity/pb_data
+    - /opt/clarity/backups
+
+# Deploy PocketBase + Next.js Stack
+- name: Deploy application docker-compose
+  template:
+    src: app-compose.yml.j2
+    dest: /opt/clarity/docker-compose.yml
+    mode: '0644'
+  notify: restart app
+
+- name: Deploy Next.js Dockerfile
+  template:
+    src: Dockerfile.nextjs.j2
+    dest: /opt/clarity/web/Dockerfile
+    mode: '0644'
+
+- name: Create placeholder Next.js app
+  copy:
+    content: |
+      {
+        "name": "clarity-app",
+        "version": "1.0.0",
+        "scripts": {
+          "dev": "next dev",
+          "build": "next build",
+          "start": "next start"
+        },
+        "dependencies": {
+          "next": "^14.0.0",
+          "react": "^18.2.0",
+          "react-dom": "^18.2.0"
+        }
+      }
+    dest: /opt/clarity/web/package.json
+    force: no  # Don't overwrite if exists
+
+# Node Exporter
+- name: Install Node Exporter
+  docker_container:
+    name: node-exporter
+    image: prom/node-exporter:latest
+    state: started
+    restart_policy: unless-stopped
+    network_mode: host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($|/)'
+
+# Restic Backup Configuration
+- name: Initialize restic repository
+  shell: |
+    export RESTIC_PASSWORD='{{ restic_password }}'
+    restic init --repo {{ restic_repo | default('/opt/clarity/backups') }} || true
+  when: restic_password is defined
+
+- name: Create backup script
+  template:
+    src: backup.sh.j2
+    dest: /usr/local/bin/backup-clarity
+    mode: '0755'
+
+- name: Setup backup cron job
+  cron:
+    name: "Backup Clarity data"
+    minute: "0"
+    hour: "2"
+    job: "/usr/local/bin/backup-clarity"
+    user: root
+
+# Start application stack
+- name: Start application containers
+  command: docker compose up -d
+  args:
+    chdir: /opt/clarity
+  register: app_up
+  changed_when: "'Creating' in app_up.stdout or 'Recreating' in app_up.stdout or 'Starting' in app_up.stdout"
+  tags: app
+
+# Health check
+- name: Create health check endpoint
+  copy:
+    content: |
+      #!/bin/bash
+      curl -s http://localhost:3000/api/health && \
+      curl -s http://localhost:8090/api/health
+    dest: /usr/local/bin/app-health
+    mode: '0755'

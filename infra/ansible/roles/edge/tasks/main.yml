@@ -1,0 +1,221 @@
+---
+# Edge VM configuration with HA support
+
+- name: Update Alpine packages
+  apk:
+    update_cache: yes
+    upgrade: yes
+  tags:
+    - edge-packages
+    - packages
+
+- name: Install base packages
+  apk:
+    name:
+      - docker
+      - docker-compose
+      - keepalived
+      - nfs-utils
+      - iptables
+      - fail2ban
+      - curl
+      - ca-certificates
+      - openssl
+      - bash
+      - htop
+      - vim
+      - util-linux
+      - rpcbind
+    state: present
+  tags:
+    - edge-packages
+    - packages
+
+- name: Ensure rpcbind service enabled
+  service:
+    name: rpcbind
+    state: started
+    enabled: yes
+    use: openrc
+
+- name: Enable and start Docker
+  service:
+    name: docker
+    state: started
+    enabled: yes
+    use: openrc
+
+# NFS Mounts for shared state
+- name: Create mount points
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /opt/edge-shared
+    - /opt/edge-shared/traefik
+    - /opt/edge-shared/amnezia
+
+- name: Mount NFS shares
+  mount:
+    path: "{{ item.path }}"
+    src: "{{ nfs_server }}:{{ nfs_export }}/{{ item.src }}"
+    fstype: nfs
+    opts: defaults,_netdev,noatime,nolock
+    state: mounted
+  loop:
+    - { path: "/opt/edge-shared/traefik", src: "traefik" }
+    - { path: "/opt/edge-shared/amnezia", src: "amnezia" }
+
+# Keepalived Configuration
+- name: Ensure keepalived directory exists
+  file:
+    path: /etc/keepalived
+    state: directory
+    mode: '0755'
+
+- name: Configure keepalived
+  template:
+    src: keepalived.conf.j2
+    dest: /etc/keepalived/keepalived.conf
+    mode: '0644'
+  notify: restart keepalived
+
+- name: Create keepalived notify scripts
+  copy:
+    src: "{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    mode: '0755'
+  loop:
+    - edge-master.sh
+    - edge-backup.sh
+    - edge-fault.sh
+
+- name: Enable and start keepalived
+  service:
+    name: keepalived
+    state: started
+    enabled: yes
+    use: openrc
+
+# Traefik Setup
+- name: Create Traefik directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /opt/traefik
+    - /opt/traefik/conf
+    - /opt/traefik/conf/dynamic
+
+- name: Initialize acme.json with correct permissions
+  file:
+    path: /opt/edge-shared/traefik/acme.json
+    state: touch
+    mode: '0600'
+    owner: root
+    group: root
+
+- name: Deploy Traefik static configuration
+  template:
+    src: traefik-static.yml.j2
+    dest: /opt/traefik/traefik.yml
+    mode: '0644'
+  notify: restart traefik
+
+- name: Deploy Traefik dynamic configuration
+  template:
+    src: traefik-dynamic.yml.j2
+    dest: /opt/traefik/conf/dynamic/routes.yml
+    mode: '0644'
+  notify: restart traefik
+
+- name: Deploy Traefik docker-compose
+  template:
+    src: traefik-compose.yml.j2
+    dest: /opt/traefik/docker-compose.yml
+    mode: '0644'
+  notify: restart traefik
+
+# AmneziaVPN Setup
+- name: Create Amnezia directories
+  file:
+    path: /opt/amnezia
+    state: directory
+    mode: '0755'
+
+- name: Deploy Amnezia docker-compose
+  template:
+    src: amnezia-compose.yml.j2
+    dest: /opt/amnezia/docker-compose.yml
+    mode: '0644'
+  notify: restart amnezia
+
+# Firewall configuration
+- name: Ensure iptables directory exists
+  file:
+    path: /etc/iptables
+    state: directory
+    mode: '0755'
+
+- name: Deploy iptables rules
+  template:
+    src: iptables.rules.j2
+    dest: /etc/iptables/rules-save
+    mode: '0644'
+  notify: reload iptables
+
+- name: Enable and start iptables
+  service:
+    name: iptables
+    state: started
+    enabled: yes
+    use: openrc
+
+# Fail2ban
+- name: Configure fail2ban
+  template:
+    src: jail.local.j2
+    dest: /etc/fail2ban/jail.local
+    mode: '0644'
+  notify: restart fail2ban
+
+- name: Enable and start fail2ban
+  service:
+    name: fail2ban
+    state: started
+    enabled: yes
+    use: openrc
+
+# Start services
+- name: Ensure Traefik stack is up
+  command: docker compose up -d
+  args:
+    chdir: /opt/traefik
+  register: traefik_up
+  changed_when: "'Creating' in traefik_up.stdout or 'Recreating' in traefik_up.stdout or 'Starting' in traefik_up.stdout"
+  when: not ansible_check_mode
+  tags: traefik
+
+- name: Ensure Amnezia stack is up
+  command: docker compose up -d
+  args:
+    chdir: /opt/amnezia
+  register: amnezia_up
+  changed_when: "'Creating' in amnezia_up.stdout or 'Recreating' in amnezia_up.stdout or 'Starting' in amnezia_up.stdout"
+  when: not ansible_check_mode
+  tags: amnezia
+
+# Health checks
+- name: Create health check script
+  template:
+    src: health-check.sh.j2
+    dest: /usr/local/bin/health-check
+    mode: '0755'
+
+- name: Setup health check cron
+  cron:
+    name: "Health check"
+    minute: "*/5"
+    job: "/usr/local/bin/health-check"

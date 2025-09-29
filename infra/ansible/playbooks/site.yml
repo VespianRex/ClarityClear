@@ -1,0 +1,66 @@
+---
+# Main site playbook - orchestrates all infrastructure components
+
+- name: Configure NFS Server
+  hosts: nfs
+  become: true
+  roles:
+    - nfs
+  tags:
+    - nfs
+    - storage
+
+- name: Configure Edge VMs with HA
+  hosts: edge
+  become: true
+  serial: 1  # Configure one at a time to avoid disruption
+  roles:
+    - edge
+  tags:
+    - edge
+    - ha
+
+- name: Configure Application VM
+  hosts: app
+  become: true
+  roles:
+    - app
+  tags:
+    - app
+    - application
+
+- name: Configure Monitoring Stack
+  hosts: monitoring
+  become: true
+  roles:
+    - monitoring
+  tags:
+    - monitoring
+    - observability
+
+- name: Configure Proxmox Backup Server
+  hosts: pbs
+  become: true
+  roles:
+    - pbs
+  tags:
+    - pbs
+    - backup
+
+- name: Verify Infrastructure
+  hosts: localhost
+  tasks:
+    - name: Check all services are accessible
+      uri:
+        url: "{{ item }}"
+        validate_certs: no
+        status_code: [200, 301, 302, 401]
+      loop:
+        - "https://app.{{ domain_base }}"
+        - "https://pb.{{ domain_base }}"
+        - "https://metrics.{{ domain_base }}"
+        - "https://status.{{ domain_base }}"
+      delegate_to: localhost
+      run_once: true
+      tags:
+        - verify

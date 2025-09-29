@@ -1,0 +1,154 @@
+# Simplified VM deployment using direct template IDs
+# This version uses minimal configuration to avoid permission issues
+
+# Test VM - Deploy this first to verify permissions
+resource "proxmox_vm_qemu" "test_vm" {
+  name        = "test-vm"
+  target_node = "prox00"
+  vmid        = 199
+
+  # Clone from template using ID
+  clone       = "9000"  # Debian template ID
+  full_clone  = true
+
+  # Basic hardware
+  cores   = 1
+  memory  = 1024
+  agent   = 1
+
+  # Boot configuration
+  boot    = "order=scsi0"
+  scsihw  = "virtio-scsi-pci"
+
+  # Network
+  network {
+    model  = "virtio"
+    bridge = "vmbr0"
+  }
+
+  # Simple cloud-init
+  ciuser    = "root"
+  ipconfig0 = "ip=dhcp"
+}
+
+# If the test VM works, deploy the full infrastructure
+# Edge VM A (Alpine)
+resource "proxmox_vm_qemu" "edge_a" {
+  count = var.deploy_full ? 1 : 0  # Conditional deployment
+
+  name        = var.edge_a_name
+  target_node = var.node
+  vmid        = 201
+
+  # Direct template reference
+  clone       = "9001"  # Alpine template ID
+  full_clone  = true
+
+  # Resources
+  cores   = 2
+  memory  = 2048
+  balloon = 1024
+  agent   = 1
+  onboot  = true
+
+  # Boot and hardware
+  boot    = "order=scsi0"
+  scsihw  = "virtio-scsi-pci"
+  qemu_os = "l26"
+
+  # Network
+  network {
+    model  = "virtio"
+    bridge = var.bridge
+  }
+
+  # Cloud-init
+  ciuser     = var.admin_user
+  sshkeys    = var.ssh_pubkey
+  ipconfig0  = "ip=dhcp"
+  nameserver = "192.168.0.1"
+
+  lifecycle {
+    ignore_changes = [
+      network[0].macaddr,
+      disk
+    ]
+  }
+}
+
+# Edge VM B (Alpine)
+resource "proxmox_vm_qemu" "edge_b" {
+  count = var.deploy_full ? 1 : 0
+
+  name        = var.edge_b_name
+  target_node = var.node  # Use same node for now
+  vmid        = 202
+
+  clone       = "9001"  # Alpine template ID
+  full_clone  = true
+
+  cores   = 2
+  memory  = 2048
+  balloon = 1024
+  agent   = 1
+  onboot  = true
+
+  boot    = "order=scsi0"
+  scsihw  = "virtio-scsi-pci"
+  qemu_os = "l26"
+
+  network {
+    model  = "virtio"
+    bridge = var.bridge
+  }
+
+  ciuser     = var.admin_user
+  sshkeys    = var.ssh_pubkey
+  ipconfig0  = "ip=dhcp"
+  nameserver = "192.168.0.1"
+
+  lifecycle {
+    ignore_changes = [
+      network[0].macaddr,
+      disk
+    ]
+  }
+}
+
+# App VM (Debian)
+resource "proxmox_vm_qemu" "app" {
+  count = var.deploy_full ? 1 : 0
+
+  name        = var.app_name
+  target_node = var.node
+  vmid        = 203
+
+  clone       = "9000"  # Debian template ID
+  full_clone  = true
+
+  cores   = 4
+  memory  = 8192
+  balloon = 4096
+  agent   = 1
+  onboot  = true
+
+  boot    = "order=scsi0"
+  scsihw  = "virtio-scsi-pci"
+  qemu_os = "l26"
+
+  network {
+    model  = "virtio"
+    bridge = var.bridge
+  }
+
+  ciuser     = var.admin_user
+  sshkeys    = var.ssh_pubkey
+  ipconfig0  = "ip=dhcp"
+  nameserver = "192.168.0.1"
+
+  lifecycle {
+    ignore_changes = [
+      network[0].macaddr
+    ]
+  }
+}

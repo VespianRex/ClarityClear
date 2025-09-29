@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# Edge VM health check script for keepalived
+
+# Check if Traefik is running
+if ! docker ps | grep -q traefik; then
+    exit 1
+fi
+
+# Check if Traefik is healthy
+if ! docker exec traefik traefik healthcheck &>/dev/null; then
+    exit 1
+fi
+
+# Check if AmneziaVPN is running
+if ! docker ps | grep -q amnezia-vpn; then
+    exit 1
+fi
+
+# Check if we can reach the app
+if ! curl -sf http://{{ app_ip }}:3000/api/health &>/dev/null; then
+    exit 1
+fi
+
+# All checks passed
+exit 0

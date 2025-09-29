@@ -1,0 +1,125 @@
+http:
+  middlewares:
+    secure-headers:
+      headers:
+        sslRedirect: true
+        stsSeconds: 63072000
+        stsIncludeSubdomains: true
+        stsPreload: true
+        forceSTSHeader: true
+        contentTypeNosniff: true
+        browserXssFilter: true
+        frameDeny: true
+        referrerPolicy: "strict-origin-when-cross-origin"
+        customResponseHeaders:
+          X-Robots-Tag: "none,noarchive,nosnippet,notranslate,noimageindex"
+          server: ""
+
+    rate-limit:
+      rateLimit:
+        average: 100
+        burst: 200
+        period: "1m"
+        sourceCriterion:
+          ipStrategy:
+            depth: 1
+
+    compress:
+      compress:
+        excludedContentTypes:
+          - "text/event-stream"
+
+  routers:
+    # Next.js App
+    app-router:
+      rule: "Host(`app.{{ domain_base }}`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - secure-headers
+        - compress
+        - rate-limit
+      service: app-service
+      tls:
+        certResolver: le
+
+    # PocketBase
+    pb-router:
+      rule: "Host(`pb.{{ domain_base }}`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - secure-headers
+        - rate-limit
+      service: pb-service
+      tls:
+        certResolver: le
+
+    # Grafana
+    metrics-router:
+      rule: "Host(`metrics.{{ domain_base }}`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - secure-headers
+        - rate-limit
+      service: metrics-service
+      tls:
+        certResolver: le
+
+    # Uptime Kuma
+    status-router:
+      rule: "Host(`status.{{ domain_base }}`)"
+      entryPoints:
+        - websecure
+      middlewares:
+        - secure-headers
+        - rate-limit
+      service: status-service
+      tls:
+        certResolver: le
+
+  services:
+    app-service:
+      loadBalancer:
+        servers:
+          - url: "http://{{ app_ip }}:3000"
+        healthCheck:
+          path: /api/health
+          interval: 30s
+          timeout: 5s
+
+    pb-service:
+      loadBalancer:
+        servers:
+          - url: "http://{{ app_ip }}:8090"
+        healthCheck:
+          path: /api/health
+          interval: 30s
+          timeout: 5s
+
+    metrics-service:
+      loadBalancer:
+        servers:
+          - url: "http://{{ monitoring_ip }}:3000"
+
+    status-service:
+      loadBalancer:
+        servers:
+          - url: "http://{{ monitoring_ip }}:3001"
+
+tls:
+  options:
+    modern:
+      minVersion: VersionTLS12
+      cipherSuites:
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305
+      curvePreferences:
+        - CurveP521
+        - CurveP384
+      sniStrict: true
