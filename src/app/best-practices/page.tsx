@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button'; // Added Button import
 export const metadata: Metadata = {
   title: 'Best Practices for House Clearance',
   description:
-    'Helpful tips and advice for a smooth and efficient house clearance process from ClarityClear.',
+    'Helpful tips and advice for a smooth and efficient house clearance process from BestClear.',
 };
 
 const bestPractices = [
@@ -41,7 +41,7 @@ const bestPractices = [
     title: 'Choose a Reputable Clearance Company',
     icon: ShieldCheck,
     content:
-      'Look for a company that is licensed, insured, and has good reviews. Ensure they have a clear policy on recycling and waste disposal. Ask for a detailed quote and understand what services are included. ClarityClear is fully licensed and committed to transparent, professional service.',
+      'Look for a company that is licensed, insured, and has good reviews. Ensure they have a clear policy on recycling and waste disposal. Ask for a detailed quote and understand what services are included. BestClear is fully licensed and committed to transparent, professional service.',
   },
   {
     id: 'bp4',
@@ -109,7 +109,7 @@ export default function BestPracticesPage() {
             Need Professional Help?
           </h2>
           <p className="text-lg text-primary-foreground/80 mb-6 max-w-xl mx-auto">
-            ClarityClear offers expert house clearance services. Contact us for
+            BestClear offers expert house clearance services. Contact us for
             a free quote and a hassle-free experience.
           </p>
           <Button

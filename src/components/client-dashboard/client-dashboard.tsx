@@ -75,7 +75,7 @@ export function ClientDashboard() {
       {/* Welcome Header */}
       <div className="bg-gradient-to-r from-primary to-accent text-white p-6 rounded-lg">
         <h1 className="text-2xl font-bold mb-2">
-          Welcome to Your ClarityClear Dashboard
+          Welcome to Your BestClear Dashboard
         </h1>
         <p className="opacity-90">
           Manage your clearance business with ease. Everything you need in one

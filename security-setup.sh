@@ -6,7 +6,7 @@
 set -e
 
 echo "========================================"
-echo "ClarityClear Security Setup"
+echo "BestClear Security Setup"
 echo "========================================"
 
 # Colors for output
@@ -210,7 +210,7 @@ EOF
 chmod +x backup.sh
 
 # Add to crontab
-(crontab -l 2>/dev/null; echo "0 3 * * * /home/alexa/DEV/ClarityClear/ClarityClear/backup.sh") | crontab -
+(crontab -l 2>/dev/null; echo "0 3 * * * /home/alexa/DEV/BestClear/BestClear/backup.sh") | crontab -
 
 echo -e "${GREEN}[9/10] Creating monitoring script...${NC}"
 cat > monitor.sh << 'EOF'

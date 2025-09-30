@@ -41,7 +41,7 @@ rc-update add cloud-final default
 
 # Create VespianRex user
 adduser -D VespianRex
-echo 'VespianRex:ClarityInfra2025!' | chpasswd
+echo 'VespianRex:${ADMIN_PASSWORD:-ChangeMe}' | chpasswd
 addgroup VespianRex wheel
 
 # Configure sudo
@@ -49,7 +49,7 @@ echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
 
 # Setup SSH keys
 mkdir -p /home/VespianRex/.ssh
-echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPJlA1A99bGtbYm1q/clybzBq1v0eJ8QaNzXwHUKV1WO VespianRex@andub.go.ro' > /home/VespianRex/.ssh/authorized_keys
+echo '${SSH_PUBKEY}
 chown -R VespianRex:VespianRex /home/VespianRex/.ssh
 chmod 700 /home/VespianRex/.ssh
 chmod 600 /home/VespianRex/.ssh/authorized_keys
@@ -145,7 +145,7 @@ RUN apk add --no-cache \
 
 # Create user
 RUN adduser -D VespianRex && \
-    echo 'VespianRex:ClarityInfra2025!' | chpasswd && \
+    echo 'VespianRex:${ADMIN_PASSWORD:-ChangeMe}' | chpasswd && \
     addgroup VespianRex wheel
 
 # Configure sudo
@@ -153,7 +153,7 @@ RUN echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
 
 # Setup SSH
 RUN mkdir -p /home/VespianRex/.ssh && \
-    echo 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPJlA1A99bGtbYm1q/clybzBq1v0eJ8QaNzXwHUKV1WO VespianRex@andub.go.ro' > /home/VespianRex/.ssh/authorized_keys && \
+    echo '${SSH_PUBKEY}
     chown -R VespianRex:VespianRex /home/VespianRex/.ssh && \
     chmod 700 /home/VespianRex/.ssh && \
     chmod 600 /home/VespianRex/.ssh/authorized_keys

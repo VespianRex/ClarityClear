@@ -25,12 +25,12 @@ users:
     sudo: ALL=(ALL) NOPASSWD:ALL
     shell: /bin/sh
     ssh_authorized_keys:
-      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPJlA1A99bGtbYm1q/clybzBq1v0eJ8QaNzXwHUKV1WO VespianRex@andub.go.ro
+      - ${SSH_PUBKEY}
 
 chpasswd:
   list: |
-    root:ClarityInfra2025!
-    VespianRex:ClarityInfra2025!
+    root:${ADMIN_PASSWORD:-ChangeMe}
+    VespianRex:${ADMIN_PASSWORD:-ChangeMe}
   expire: false
 
 ssh_pwauth: true
@@ -66,7 +66,7 @@ users:
     sudo: ALL=(ALL) NOPASSWD:ALL
     shell: /bin/bash
     ssh_authorized_keys:
-      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPJlA1A99bGtbYm1q/clybzBq1v0eJ8QaNzXwHUKV1WO VespianRex@andub.go.ro
+      - ${SSH_PUBKEY}
 
 package_update: true
 packages:
@@ -85,7 +85,7 @@ echo "🏗️  Creating VMs with proper specifications..."
 
 # Create SSH key file for qm commands
 cat > /tmp/ssh_key.pub << 'KEYEOF'
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPJlA1A99bGtbYm1q/clybzBq1v0eJ8QaNzXwHUKV1WO VespianRex@andub.go.ro
+${SSH_PUBKEY}
 KEYEOF
 
 # Function to create VM

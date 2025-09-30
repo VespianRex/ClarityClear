@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Start servers for ClarityClear accessible via Tailscale
+# Start servers for BestClear accessible via Tailscale
 
-echo "Starting ClarityClear servers..."
+echo "Starting BestClear servers..."
 
 # Kill existing processes
 pkill -f "pocketbase serve"

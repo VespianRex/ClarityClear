@@ -1,4 +1,4 @@
-# ClarityClear Deployment Checklist
+# BestClear Deployment Checklist
 
 ## Pre-Deployment
 

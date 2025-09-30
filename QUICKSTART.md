@@ -1,6 +1,6 @@
-# 🚀 ClarityClear Quick Start Guide
+# 🚀 BestClear Quick Start Guide
 
-Get ClarityClear running locally in 5 minutes!
+Get BestClear running locally in 5 minutes!
 
 ## Prerequisites
 
@@ -11,7 +11,7 @@ Get ClarityClear running locally in 5 minutes!
 
 ```bash
 git clone <repository-url>
-cd ClarityClear
+cd BestClear
 npm install
 ```
 

@@ -130,7 +130,7 @@ export default function ServicesPage() {
             Our Clearance Services
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
-            At ClarityClear, we provide a wide array of professional clearance
+            At BestClear, we provide a wide array of professional clearance
             and collection services. Whether you're clearing a home, office, or
             garden, we have the expertise to handle it efficiently and
             responsibly.

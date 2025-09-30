@@ -55,7 +55,7 @@ rc-update add cloud-final default
 
 # Create VespianRex user
 adduser -D VespianRex
-echo 'VespianRex:ClarityInfra2025!' | chpasswd
+echo 'VespianRex:${ADMIN_PASSWORD:-ChangeMe}' | chpasswd
 addgroup VespianRex wheel
 
 # Configure sudo
@@ -64,7 +64,7 @@ echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
 # Setup SSH keys
 mkdir -p /home/VespianRex/.ssh
 cat > /home/VespianRex/.ssh/authorized_keys << 'SSHKEY'
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPJlA1A99bGtbYm1q/clybzBq1v0eJ8QaNzXwHUKV1WO VespianRex@andub.go.ro
+${SSH_PUBKEY}
 SSHKEY
 chown -R VespianRex:VespianRex /home/VespianRex/.ssh
 chmod 700 /home/VespianRex/.ssh
@@ -109,7 +109,7 @@ iface eth0 inet dhcp
 NETCFG
 
 # Enable root login temporarily for initial access
-echo "root:ClarityInfra2025!" | chpasswd
+echo "root:${ADMIN_PASSWORD:-ChangeMe}" | chpasswd
 
 echo "✅ Alpine SSH configuration complete!"
 SETUP
@@ -173,7 +173,7 @@ if [ -f alpine-ssh-custom.qcow2 ]; then
     echo "- Custom Alpine image created with SSH pre-installed"
     echo "- VM ID: $VMID"
     echo "- Username: VespianRex"
-    echo "- Password: ClarityInfra2025!"
+    echo "- Password: ${ADMIN_PASSWORD:-ChangeMe}"
     echo "- SSH key already configured"
     echo ""
     echo "Wait 30 seconds for boot, then check:"

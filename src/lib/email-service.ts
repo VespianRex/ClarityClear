@@ -1,4 +1,4 @@
-// Email service for ClarityClear notifications
+// Email service for BestClear notifications
 // This can be extended with actual email providers like Resend, SendGrid, etc.
 
 export interface EmailTemplate {
@@ -33,13 +33,13 @@ export const emailTemplates = {
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: #001F3F; color: white; padding: 20px; text-align: center;">
-          <h1>ClarityClear</h1>
+          <h1>BestClear</h1>
           <h2>Booking Confirmation</h2>
         </div>
         
         <div style="padding: 20px; background: #f9f9f9;">
           <h3>Hello ${data.customerName},</h3>
-          <p>Thank you for choosing ClarityClear! We've received your booking request and will contact you within 24 hours with a detailed quote.</p>
+          <p>Thank you for choosing BestClear! We've received your booking request and will contact you within 24 hours with a detailed quote.</p>
           
           <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
             <h4>Booking Details:</h4>
@@ -57,21 +57,21 @@ export const emailTemplates = {
             </a>
           </div>
           
-          <p>Best regards,<br>The ClarityClear Team</p>
+          <p>Best regards,<br>The BestClear Team</p>
         </div>
         
         <div style="background: #001F3F; color: white; padding: 15px; text-align: center; font-size: 12px;">
-          <p>ClarityClear - Professional Clearance Services</p>
+          <p>BestClear - Professional Clearance Services</p>
           <p>Email: info@clarityclear.com | Phone: +1 (234) 567-890</p>
         </div>
       </div>
     `,
     text: `
-      ClarityClear - Booking Confirmation
+      BestClear - Booking Confirmation
       
       Hello ${data.customerName},
       
-      Thank you for choosing ClarityClear! We've received your booking request.
+      Thank you for choosing BestClear! We've received your booking request.
       
       Booking Details:
       - Service: ${data.serviceType}
@@ -82,7 +82,7 @@ export const emailTemplates = {
       We'll contact you within 24 hours with a detailed quote.
       
       Best regards,
-      The ClarityClear Team
+      The BestClear Team
     `,
   }),
 
@@ -122,11 +122,11 @@ export const emailTemplates = {
 
   contactConfirmation: (data: ContactNotificationData): EmailTemplate => ({
     to: data.email,
-    subject: 'Thank you for contacting ClarityClear',
+    subject: 'Thank you for contacting BestClear',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: #001F3F; color: white; padding: 20px; text-align: center;">
-          <h1>ClarityClear</h1>
+          <h1>BestClear</h1>
           <h2>Message Received</h2>
         </div>
         
@@ -149,7 +149,7 @@ export const emailTemplates = {
             </a>
           </div>
           
-          <p>Best regards,<br>The ClarityClear Team</p>
+          <p>Best regards,<br>The BestClear Team</p>
         </div>
       </div>
     `,

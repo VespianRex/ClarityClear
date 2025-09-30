@@ -59,7 +59,7 @@ export default function AboutPage() {
           <div className="relative aspect-square rounded-lg overflow-hidden shadow-xl">
             <Image
               src="https://placehold.co/500x500.png"
-              alt="ClarityClear team at work"
+              alt="BestClear team at work"
               layout="fill"
               objectFit="cover"
               data-ai-hint="team work"

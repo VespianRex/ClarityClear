@@ -1,4 +1,4 @@
-# ClarityClear Security Guide - DDNS Home Hosting
+# BestClear Security Guide - DDNS Home Hosting
 
 ## ⚠️ Critical Security Warning
 
@@ -92,9 +92,9 @@ bash deploy-secure.sh
 crontab -e
 
 # Add these lines:
-*/5 * * * * /home/alexa/DEV/ClarityClear/ClarityClear/ddns-updater.sh
-0 3 * * * /home/alexa/DEV/ClarityClear/ClarityClear/backup.sh
-*/30 * * * * /home/alexa/DEV/ClarityClear/ClarityClear/monitor.sh
+*/5 * * * * /home/alexa/DEV/BestClear/BestClear/ddns-updater.sh
+0 3 * * * /home/alexa/DEV/BestClear/BestClear/backup.sh
+*/30 * * * * /home/alexa/DEV/BestClear/BestClear/monitor.sh
 ```
 
 ### 6. Router Configuration

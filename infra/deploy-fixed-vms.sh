@@ -35,7 +35,7 @@ users:
     sudo: ALL=(ALL) NOPASSWD:ALL
     shell: /bin/ash
     ssh_authorized_keys:
-      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPJlA1A99bGtbYm1q/clybzBq1v0eJ8QaNzXwHUKV1WO VespianRex@andub.go.ro
+      - ${SSH_PUBKEY}
 
 package_update: true
 packages:
@@ -65,7 +65,7 @@ users:
     sudo: ALL=(ALL) NOPASSWD:ALL
     shell: /bin/bash
     ssh_authorized_keys:
-      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPJlA1A99bGtbYm1q/clybzBq1v0eJ8QaNzXwHUKV1WO VespianRex@andub.go.ro
+      - ${SSH_PUBKEY}
 
 package_update: true
 packages:
@@ -106,7 +106,7 @@ create_vm_static() {
         --agent 1 \
         --onboot 1 \
         --ciuser VespianRex \
-        --cipassword "ClarityInfra2025!" \
+        --cipassword "${ADMIN_PASSWORD:-ChangeMe}" \
         --ipconfig0 "ip=$ip_address/24,gw=192.168.0.1" \
         --nameserver "8.8.8.8" \
         --searchdomain "andub.go.ro" \

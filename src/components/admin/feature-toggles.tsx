@@ -165,7 +165,7 @@ export function FeatureToggles() {
             Feature Management
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Control which features are enabled on your ClarityClear website.
+            Control which features are enabled on your BestClear website.
             Revenue features can be disabled if not needed.
           </p>
         </CardHeader>

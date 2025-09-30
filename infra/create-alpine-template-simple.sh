@@ -52,12 +52,12 @@ qm set $VMID --ide2 local-lvm:cloudinit
 
 # Configure cloud-init
 qm set $VMID --ciuser VespianRex
-qm set $VMID --cipassword ClarityInfra2025!
+qm set $VMID --cipassword ${ADMIN_PASSWORD:-ChangeMe}
 qm set $VMID --ipconfig0 ip=dhcp
 
 # Add SSH key
 cat > /tmp/ssh_key.pub << 'KEYEOF'
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPJlA1A99bGtbYm1q/clybzBq1v0eJ8QaNzXwHUKV1WO VespianRex@andub.go.ro
+${SSH_PUBKEY}
 KEYEOF
 
 qm set $VMID --sshkeys /tmp/ssh_key.pub
@@ -80,7 +80,7 @@ users:
     sudo: ALL=(ALL) NOPASSWD:ALL
     shell: /bin/ash
     ssh_authorized_keys:
-      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPJlA1A99bGtbYm1q/clybzBq1v0eJ8QaNzXwHUKV1WO VespianRex@andub.go.ro
+      - ${SSH_PUBKEY}
 
 package_update: true
 package_upgrade: true
@@ -125,7 +125,7 @@ echo "📋 VM Details:"
 echo "- VM ID: $VMID"
 echo "- Name: $VM_NAME"
 echo "- Username: VespianRex"
-echo "- Password: ClarityInfra2025!"
+echo "- Password: ${ADMIN_PASSWORD:-ChangeMe}"
 echo "- SSH key configured"
 echo ""
 echo "Try: qm guest cmd $VMID network-get-interfaces"

@@ -1,4 +1,4 @@
-# **App Name**: ClarityClear
+# **App Name**: BestClear
 
 ## Core Features:
 

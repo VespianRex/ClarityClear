@@ -14,7 +14,7 @@ import { CTA_BOOKING_HREF, CTA_BOOKING_LABEL } from '@/lib/constants';
 const testimonialsData: TestimonialCardProps[] = [
   {
     quote:
-      'ClarityClear transformed our cluttered attic into a usable space again! The team was incredibly professional, efficient, and respectful of our home. Highly recommended!',
+      'BestClear transformed our cluttered attic into a usable space again! The team was incredibly professional, efficient, and respectful of our home. Highly recommended!',
     author: 'Emily Carter',
     role: 'Homeowner, Brighton',
     rating: 5,
@@ -23,7 +23,7 @@ const testimonialsData: TestimonialCardProps[] = [
   },
   {
     quote:
-      'After my parents passed, clearing their house felt like an insurmountable task. ClarityClear handled everything with such sensitivity and care. They made a difficult time much more manageable.',
+      'After my parents passed, clearing their house felt like an insurmountable task. BestClear handled everything with such sensitivity and care. They made a difficult time much more manageable.',
     author: 'David Lee',
     role: 'Probate Client, London',
     rating: 5,
@@ -32,7 +32,7 @@ const testimonialsData: TestimonialCardProps[] = [
   },
   {
     quote:
-      'Our office move was seamless thanks to ClarityClear. They cleared out our old premises quickly and disposed of all unwanted IT equipment responsibly. Top-notch service!',
+      'Our office move was seamless thanks to BestClear. They cleared out our old premises quickly and disposed of all unwanted IT equipment responsibly. Top-notch service!',
     author: 'Sophie Chen',
     role: 'Office Manager, Tech Solutions Ltd.',
     rating: 5,
@@ -41,7 +41,7 @@ const testimonialsData: TestimonialCardProps[] = [
   },
   {
     quote:
-      "The garden was completely overgrown, but ClarityClear tackled it with ease. They removed all the green waste and old shed, leaving it spotless. I'm thrilled with the result.",
+      "The garden was completely overgrown, but BestClear tackled it with ease. They removed all the green waste and old shed, leaving it spotless. I'm thrilled with the result.",
     author: 'Michael Brown',
     role: 'Homeowner, Kent',
     rating: 4.5,
@@ -50,7 +50,7 @@ const testimonialsData: TestimonialCardProps[] = [
   },
   {
     quote:
-      "Dealing with a hoarder's property is never easy, but ClarityClear approached the situation with utmost professionalism and compassion. They were a lifesaver.",
+      "Dealing with a hoarder's property is never easy, but BestClear approached the situation with utmost professionalism and compassion. They were a lifesaver.",
     author: 'Maria Rodriguez',
     role: 'Property Manager',
     rating: 5,
@@ -95,7 +95,7 @@ export default function TestimonialsPage() {
           <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
             We pride ourselves on delivering exceptional service. Here's what
             some of our valued clients think about their experience with
-            ClarityClear.
+            BestClear.
           </p>
         </div>
       </SectionWrapper>
@@ -120,7 +120,7 @@ export default function TestimonialsPage() {
       >
         <div className="text-center">
           <h2 className="font-headline text-3xl sm:text-4xl font-bold mb-6">
-            Experience the ClarityClear Difference
+            Experience the BestClear Difference
           </h2>
           <p className="text-lg text-primary-foreground/80 mb-8 max-w-xl mx-auto">
             Join our growing list of satisfied customers. Get your free,

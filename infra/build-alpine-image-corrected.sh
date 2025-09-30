@@ -109,14 +109,14 @@ rc-update add hostname boot
 rc-update add localmount boot
 
 adduser -D -s /bin/bash VespianRex
-echo 'VespianRex:ClarityInfra2025!' | chpasswd
+echo 'VespianRex:${ADMIN_PASSWORD:-ChangeMe}' | chpasswd
 addgroup VespianRex wheel
 
 echo '%wheel ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
 
 mkdir -p /home/VespianRex/.ssh
 cat > /home/VespianRex/.ssh/authorized_keys <<'SSHKEY'
-ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPJlA1A99bGtbYm1q/clybzBq1v0eJ8QaNzXwHUKV1WO VespianRex@andub.go.ro
+${SSH_PUBKEY}
 SSHKEY
 chown -R VespianRex:VespianRex /home/VespianRex/.ssh
 chmod 700 /home/VespianRex/.ssh
@@ -159,7 +159,7 @@ virtio_console
 MODULES
 
 echo "alpine-ssh" > /etc/hostname
-echo "root:ClarityInfra2025!" | chpasswd
+echo "root:${ADMIN_PASSWORD:-ChangeMe}" | chpasswd
 
 echo "✅ Alpine SSH configuration complete!"
 SETUP

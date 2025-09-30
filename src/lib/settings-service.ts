@@ -14,7 +14,7 @@ export interface SiteSetting {
   updated: string;
 }
 
-// Default settings for ClarityClear
+// Default settings for BestClear
 export const defaultSettings = {
   // Revenue Features (Phase C - Toggleable)
   'features.pricing_calculator': {

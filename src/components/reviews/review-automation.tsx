@@ -166,7 +166,7 @@ export function ReviewAutomation({
             Leave a Review
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Share your experience with ClarityClear
+            Share your experience with BestClear
           </p>
         </CardHeader>
         <CardContent className="space-y-4">

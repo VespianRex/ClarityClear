@@ -4,7 +4,7 @@
 set -e
 
 echo "========================================"
-echo "ClarityClear Secure Deployment"
+echo "BestClear Secure Deployment"
 echo "========================================"
 
 # Colors
@@ -93,8 +93,8 @@ echo -e "${YELLOW}Important:${NC}"
 echo -e "1. Configure your router to forward ports 80 and 443 to this machine"
 echo -e "2. Update ddns-updater.sh with your DDNS provider credentials"
 echo -e "3. Run: crontab -e and add:"
-echo -e "   */5 * * * * /home/alexa/DEV/ClarityClear/ClarityClear/ddns-updater.sh"
-echo -e "   0 3 * * * /home/alexa/DEV/ClarityClear/ClarityClear/backup.sh"
+echo -e "   */5 * * * * /home/alexa/DEV/BestClear/BestClear/ddns-updater.sh"
+echo -e "   0 3 * * * /home/alexa/DEV/BestClear/BestClear/backup.sh"
 echo
 echo -e "${YELLOW}Security Checklist:${NC}"
 echo -e "[ ] Router firewall configured"

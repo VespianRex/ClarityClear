@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { ReviewAutomationDashboard } from '@/components/admin/review-automation-dashboard';
 
 export const metadata: Metadata = {
-  title: 'Review Automation - ClarityClear Admin',
+  title: 'Review Automation - BestClear Admin',
   description: 'Manage automated review collection campaigns',
 };
 

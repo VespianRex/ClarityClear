@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     template: `%s | ${APP_NAME}`,
   },
   description:
-    'ClarityClear provides professional house clearance and collection services.',
+    'BestClear provides professional house clearance and collection services.',
 };
 
 export default function RootLayout({

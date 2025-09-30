@@ -12,7 +12,7 @@ import {
 export const metadata: Metadata = {
   title: 'Book a Collection',
   description:
-    'Get a free quote for your house clearance or collection service from ClarityClear.',
+    'Get a free quote for your house clearance or collection service from BestClear.',
 };
 
 export default function BookingPage() {

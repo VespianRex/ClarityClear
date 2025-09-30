@@ -72,7 +72,7 @@ export default function HomePage() {
           {
             customer_name: 'Sarah M.',
             review_text:
-              'ClarityClear made our house move so much easier! Professional, quick, and very friendly staff.',
+              'BestClear made our house move so much easier! Professional, quick, and very friendly staff.',
             rating: 5,
           },
           {
@@ -158,10 +158,10 @@ export default function HomePage() {
         <FadeInSection>
           <div className="text-center mb-12">
             <h2 className="font-headline text-3xl sm:text-4xl font-bold text-primary mb-4">
-              Why Choose ClarityClear?
+              Why Choose BestClear?
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Experience the ClarityClear difference with our commitment to
+              Experience the BestClear difference with our commitment to
               quality, reliability, and customer satisfaction.
             </p>
           </div>

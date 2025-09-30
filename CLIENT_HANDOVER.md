@@ -1,8 +1,8 @@
-# 🎉 ClarityClear Website - Client Handover Package
+# 🎉 BestClear Website - Client Handover Package
 
 ## Welcome to Your New Professional Website!
 
-Congratulations! Your ClarityClear website is now complete and ready to help grow your clearance business. This document will help you understand and manage your new website.
+Congratulations! Your BestClear website is now complete and ready to help grow your clearance business. This document will help you understand and manage your new website.
 
 ---
 

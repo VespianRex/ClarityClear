@@ -9,11 +9,11 @@ import {
   Mail,
 } from 'lucide-react';
 
-export const APP_NAME = 'ClarityClear';
+export const APP_NAME = 'BestClear';
 
 export const WHATSAPP_PHONE_NUMBER = '1234567890'; // Replace with a real number
 export const WHATSAPP_PREFILL_MESSAGE =
-  "Hello ClarityClear! I'm interested in your collection services and would like a quote.";
+  "Hello BestClear! I'm interested in your collection services and would like a quote.";
 
 export interface NavLink {
   href: string;

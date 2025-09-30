@@ -11,12 +11,12 @@ describe('Basic Test Suite', () => {
 
   it('should work with objects', () => {
     const testObject = {
-      name: 'ClarityClear',
+      name: 'BestClear',
       type: 'clearance-service',
       features: ['booking', 'gallery', 'reviews']
     }
     
-    expect(testObject.name).toBe('ClarityClear')
+    expect(testObject.name).toBe('BestClear')
     expect(testObject.features).toHaveLength(3)
     expect(testObject.features).toContain('booking')
   })

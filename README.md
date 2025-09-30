@@ -1,6 +1,6 @@
-# ClarityClear
+# BestClear
 
-ClarityClear is a professional house clearance and waste removal service website built with Next.js, TypeScript, and PocketBase. This is a complete business solution featuring booking management, customer testimonials, payment processing, and automated review systems.
+BestClear is a professional house clearance and waste removal service website built with Next.js, TypeScript, and PocketBase. This is a complete business solution featuring booking management, customer testimonials, payment processing, and automated review systems.
 
 ## 🌟 Features
 
@@ -39,7 +39,7 @@ ClarityClear is a professional house clearance and waste removal service website
 
 ```bash
 git clone <repository-url>
-cd ClarityClear
+cd BestClear
 npm install
 ```
 
@@ -55,7 +55,7 @@ POCKETBASE_ADMIN_PASSWORD=your_secure_password_here
 
 # Site Configuration
 NEXT_PUBLIC_SITE_URL=http://localhost:9002
-NEXT_PUBLIC_SITE_NAME=ClarityClear
+NEXT_PUBLIC_SITE_NAME=BestClear
 
 # WhatsApp Integration
 NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER=1234567890
@@ -142,7 +142,7 @@ npm run dev
 ## 🏗️ Project Structure
 
 ```
-ClarityClear/
+BestClear/
 ├── src/
 │   ├── app/                 # Next.js App Router pages
 │   │   ├── (routes)/        # Main website routes
@@ -185,7 +185,7 @@ POCKETBASE_ADMIN_PASSWORD=your_secure_production_password
 
 # Production Site Configuration
 NEXT_PUBLIC_SITE_URL=https://yourdomain.com
-NEXT_PUBLIC_SITE_NAME=ClarityClear
+NEXT_PUBLIC_SITE_NAME=BestClear
 
 # WhatsApp Business Number
 NEXT_PUBLIC_WHATSAPP_PHONE_NUMBER=447123456789

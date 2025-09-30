@@ -41,7 +41,7 @@ const faqData = [
     id: 'faq4',
     question: 'What areas do you cover?',
     answer:
-      'ClarityClear provides services across [Your Service Area - e.g., London, Surrey, Kent]. Please check our website or contact us to confirm if we cover your specific postcode.',
+      'BestClear provides services across [Your Service Area - e.g., London, Surrey, Kent]. Please check our website or contact us to confirm if we cover your specific postcode.',
     icon: MapPin,
   },
   {
@@ -62,7 +62,7 @@ const faqData = [
     id: 'faq7',
     question: 'Are you licensed and insured?',
     answer:
-      "Yes, ClarityClear is fully licensed by the Environment Agency as a waste carrier and we hold comprehensive public liability insurance. You can have peace of mind knowing you're dealing with a professional and reputable company.",
+      "Yes, BestClear is fully licensed by the Environment Agency as a waste carrier and we hold comprehensive public liability insurance. You can have peace of mind knowing you're dealing with a professional and reputable company.",
     icon: HelpCircle,
   },
 ];

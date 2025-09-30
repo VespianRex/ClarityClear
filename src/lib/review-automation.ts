@@ -33,24 +33,24 @@ export interface ReviewRequestData {
 export const reviewEmailTemplates = {
   initialReviewRequest: (data: ReviewRequestData): EmailTemplate => ({
     to: data.customerEmail,
-    subject: `How was your ${data.serviceType} service with ClarityClear?`,
+    subject: `How was your ${data.serviceType} service with BestClear?`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: #001F3F; color: white; padding: 20px; text-align: center;">
-          <h1>ClarityClear</h1>
+          <h1>BestClear</h1>
           <h2>We'd Love Your Feedback!</h2>
         </div>
         
         <div style="padding: 30px; background: #f9f9f9;">
           <h3>Hello ${data.customerName},</h3>
-          <p>Thank you for choosing ClarityClear for your ${data.serviceType} service. We hope you're delighted with the results!</p>
+          <p>Thank you for choosing BestClear for your ${data.serviceType} service. We hope you're delighted with the results!</p>
           
           <p>Your feedback helps us improve our services and helps other customers make informed decisions. Would you mind taking a moment to share your experience?</p>
           
           <div style="text-align: center; margin: 30px 0;">
             <h4>Leave a Review On:</h4>
             <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
-              <a href="https://www.google.com/search?q=ClarityClear+reviews" style="background: #4285f4; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 5px;">
+              <a href="https://www.google.com/search?q=BestClear+reviews" style="background: #4285f4; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 5px;">
                 ⭐ Google Reviews
               </a>
               <a href="https://www.facebook.com/clarityclear/reviews" style="background: #1877f2; color: white; padding: 12px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 5px;">
@@ -80,7 +80,7 @@ export const reviewEmailTemplates = {
             </a>
           </div>
           
-          <p>Best regards,<br>The ClarityClear Team</p>
+          <p>Best regards,<br>The BestClear Team</p>
           
           <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
           <p style="font-size: 12px; color: #666;">
@@ -94,17 +94,17 @@ export const reviewEmailTemplates = {
     text: `
       Hello ${data.customerName},
       
-      Thank you for choosing ClarityClear for your ${data.serviceType} service!
+      Thank you for choosing BestClear for your ${data.serviceType} service!
       
       We'd love your feedback. Please consider leaving us a review:
-      - Google Reviews: https://www.google.com/search?q=ClarityClear+reviews
+      - Google Reviews: https://www.google.com/search?q=BestClear+reviews
       - Facebook: https://www.facebook.com/clarityclear/reviews
       - Our Website: /testimonials
       
       Your feedback helps us improve and helps other customers.
       
       Best regards,
-      The ClarityClear Team
+      The BestClear Team
       
       Service completed: ${new Date(data.completionDate).toLocaleDateString()}
       Booking reference: ${data.bookingId}
@@ -113,11 +113,11 @@ export const reviewEmailTemplates = {
 
   followUpRequest: (data: ReviewRequestData): EmailTemplate => ({
     to: data.customerEmail,
-    subject: `Quick reminder: Share your ClarityClear experience`,
+    subject: `Quick reminder: Share your BestClear experience`,
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: #001F3F; color: white; padding: 20px; text-align: center;">
-          <h1>ClarityClear</h1>
+          <h1>BestClear</h1>
           <h2>Just a Friendly Reminder</h2>
         </div>
         
@@ -130,14 +130,14 @@ export const reviewEmailTemplates = {
           <div style="background: white; padding: 20px; border-radius: 5px; margin: 20px 0; text-align: center;">
             <h4>2-Minute Review = Big Impact</h4>
             <p>Your review helps local families find reliable clearance services</p>
-            <a href="https://www.google.com/search?q=ClarityClear+reviews" style="background: #39CCCC; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px;">
+            <a href="https://www.google.com/search?q=BestClear+reviews" style="background: #39CCCC; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px;">
               ⭐ Leave Google Review
             </a>
           </div>
           
           <p>If you've already left a review, thank you so much! If you have any concerns about our service, please let us know directly so we can make it right.</p>
           
-          <p>Best regards,<br>The ClarityClear Team</p>
+          <p>Best regards,<br>The BestClear Team</p>
           
           <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
           <p style="font-size: 12px; color: #666;">
@@ -154,7 +154,7 @@ export const reviewEmailTemplates = {
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: #001F3F; color: white; padding: 20px; text-align: center;">
-          <h1>ClarityClear</h1>
+          <h1>BestClear</h1>
           <h2>Thank You! 🌟</h2>
         </div>
         
@@ -186,7 +186,7 @@ export const reviewEmailTemplates = {
           
           <p>We look forward to serving you again in the future!</p>
           
-          <p>Best regards,<br>The ClarityClear Team</p>
+          <p>Best regards,<br>The BestClear Team</p>
         </div>
       </div>
     `

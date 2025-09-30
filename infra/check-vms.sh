@@ -3,7 +3,7 @@
 # Proxmox credentials
 PM_API_URL="https://192.168.0.33:8006/api2/json"
 PM_USER="root@pam"
-PM_PASSWORD="sonicx555"
+PM_PASSWORD="${PM_PASSWORD:-}"
 
 echo "Checking Proxmox cluster status..."
 echo "=================================="

@@ -78,4 +78,4 @@ touch "$LOG_FILE"
 update_ddns
 
 # Add this to crontab for automatic updates every 5 minutes:
-# */5 * * * * /home/alexa/DEV/ClarityClear/ClarityClear/ddns-updater.sh
+# */5 * * * * /home/alexa/DEV/BestClear/BestClear/ddns-updater.sh
