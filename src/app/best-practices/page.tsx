@@ -109,8 +109,8 @@ export default function BestPracticesPage() {
             Need Professional Help?
           </h2>
           <p className="text-lg text-primary-foreground/80 mb-6 max-w-xl mx-auto">
-            BestClear offers expert house clearance services. Contact us for
-            a free quote and a hassle-free experience.
+            BestClear offers expert house clearance services. Contact us for a
+            free quote and a hassle-free experience.
           </p>
           <Button
             asChild

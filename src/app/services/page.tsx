@@ -130,8 +130,8 @@ export default function ServicesPage() {
             Our Clearance Services
           </h1>
           <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
-            At BestClear, we provide a wide array of professional clearance
-            and collection services. Whether you're clearing a home, office, or
+            At BestClear, we provide a wide array of professional clearance and
+            collection services. Whether you're clearing a home, office, or
             garden, we have the expertise to handle it efficiently and
             responsibly.
           </p>
@@ -181,7 +181,8 @@ export default function ServicesPage() {
             Where We Serve
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Check if we provide clearance services in your area. We cover multiple locations with transparent pricing.
+            Check if we provide clearance services in your area. We cover
+            multiple locations with transparent pricing.
           </p>
         </div>
         <div className="max-w-4xl mx-auto">

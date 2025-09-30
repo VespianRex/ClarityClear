@@ -80,7 +80,7 @@ export default function FaqPage() {
   };
 
   // Convert PocketBase FAQs to display format
-  const dynamicFaqs = faqs.map((faq) => ({
+  const dynamicFaqs = faqs.map(faq => ({
     id: `faq-${faq.id}`,
     question: faq.question,
     answer: faq.answer,

@@ -6,25 +6,33 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Star, 
-  Mail, 
-  TrendingUp, 
-  Users, 
+import {
+  Star,
+  Mail,
+  TrendingUp,
+  Users,
   ExternalLink,
   Play,
   CheckCircle,
   Clock,
-  AlertCircle
+  AlertCircle,
 } from 'lucide-react';
-import { useReviewCampaigns, useReviewStats, useReviewAutomation } from '@/hooks/use-review-automation';
+import {
+  useReviewCampaigns,
+  useReviewStats,
+  useReviewAutomation,
+} from '@/hooks/use-review-automation';
 import { LoadingSpinner } from '@/components/ui/loading-spinner';
 import { FadeInSection } from '@/components/ui/fade-in-section';
 import { AnimatedCounter } from '@/components/ui/animated-counter';
 
 export function ReviewAutomationDashboard() {
   const [isRunningAutomation, setIsRunningAutomation] = useState(false);
-  const { campaigns, isLoading: campaignsLoading, refresh } = useReviewCampaigns();
+  const {
+    campaigns,
+    isLoading: campaignsLoading,
+    refresh,
+  } = useReviewCampaigns();
   const { stats, isLoading: statsLoading } = useReviewStats();
   const { runAutomation } = useReviewAutomation();
 
@@ -44,23 +52,35 @@ export function ReviewAutomationDashboard() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'sent': return 'bg-blue-100 text-blue-800';
-      case 'responded': return 'bg-green-100 text-green-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'opted_out': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'sent':
+        return 'bg-blue-100 text-blue-800';
+      case 'responded':
+        return 'bg-green-100 text-green-800';
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'opted_out':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pending': return <Clock className="h-4 w-4" />;
-      case 'sent': return <Mail className="h-4 w-4" />;
-      case 'responded': return <CheckCircle className="h-4 w-4" />;
-      case 'completed': return <CheckCircle className="h-4 w-4" />;
-      case 'opted_out': return <AlertCircle className="h-4 w-4" />;
-      default: return <Clock className="h-4 w-4" />;
+      case 'pending':
+        return <Clock className="h-4 w-4" />;
+      case 'sent':
+        return <Mail className="h-4 w-4" />;
+      case 'responded':
+        return <CheckCircle className="h-4 w-4" />;
+      case 'completed':
+        return <CheckCircle className="h-4 w-4" />;
+      case 'opted_out':
+        return <AlertCircle className="h-4 w-4" />;
+      default:
+        return <Clock className="h-4 w-4" />;
     }
   };
 
@@ -78,12 +98,15 @@ export function ReviewAutomationDashboard() {
       <FadeInSection>
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold text-primary mb-2">Review Automation</h1>
+            <h1 className="text-3xl font-bold text-primary mb-2">
+              Review Automation
+            </h1>
             <p className="text-muted-foreground">
-              Automatically collect customer reviews to boost your online reputation
+              Automatically collect customer reviews to boost your online
+              reputation
             </p>
           </div>
-          <Button 
+          <Button
             onClick={handleRunAutomation}
             disabled={isRunningAutomation}
             className="bg-accent hover:bg-accent/90"
@@ -111,11 +134,13 @@ export function ReviewAutomationDashboard() {
               <div className="flex items-center gap-3">
                 <Users className="h-8 w-8 text-blue-500" />
                 <div>
-                  <AnimatedCounter 
-                    end={stats.totalCampaigns} 
+                  <AnimatedCounter
+                    end={stats.totalCampaigns}
                     className="text-2xl font-bold text-primary"
                   />
-                  <p className="text-sm text-muted-foreground">Total Campaigns</p>
+                  <p className="text-sm text-muted-foreground">
+                    Total Campaigns
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -126,8 +151,8 @@ export function ReviewAutomationDashboard() {
               <div className="flex items-center gap-3">
                 <Mail className="h-8 w-8 text-green-500" />
                 <div>
-                  <AnimatedCounter 
-                    end={stats.reviewRequestsSent} 
+                  <AnimatedCounter
+                    end={stats.reviewRequestsSent}
                     className="text-2xl font-bold text-primary"
                   />
                   <p className="text-sm text-muted-foreground">Emails Sent</p>
@@ -141,11 +166,13 @@ export function ReviewAutomationDashboard() {
               <div className="flex items-center gap-3">
                 <Star className="h-8 w-8 text-yellow-500" />
                 <div>
-                  <AnimatedCounter 
-                    end={stats.reviewsReceived} 
+                  <AnimatedCounter
+                    end={stats.reviewsReceived}
                     className="text-2xl font-bold text-primary"
                   />
-                  <p className="text-sm text-muted-foreground">Reviews Received</p>
+                  <p className="text-sm text-muted-foreground">
+                    Reviews Received
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -156,9 +183,9 @@ export function ReviewAutomationDashboard() {
               <div className="flex items-center gap-3">
                 <TrendingUp className="h-8 w-8 text-accent" />
                 <div>
-                  <AnimatedCounter 
-                    end={stats.responseRate} 
-                    suffix="%" 
+                  <AnimatedCounter
+                    end={stats.responseRate}
+                    suffix="%"
                     className="text-2xl font-bold text-primary"
                   />
                   <p className="text-sm text-muted-foreground">Response Rate</p>
@@ -187,7 +214,7 @@ export function ReviewAutomationDashboard() {
                     {stats.averageRating.toFixed(1)}
                   </span>
                   <div className="flex">
-                    {[1, 2, 3, 4, 5].map((star) => (
+                    {[1, 2, 3, 4, 5].map(star => (
                       <Star
                         key={star}
                         className={`h-4 w-4 ${
@@ -200,7 +227,7 @@ export function ReviewAutomationDashboard() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Response Rate</span>
@@ -216,12 +243,19 @@ export function ReviewAutomationDashboard() {
               <CardTitle>Platform Breakdown</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {Object.entries(stats.platformBreakdown).map(([platform, count]) => (
-                <div key={platform} className="flex justify-between items-center">
-                  <span className="text-sm font-medium capitalize">{platform}</span>
-                  <Badge variant="secondary">{count} reviews</Badge>
-                </div>
-              ))}
+              {Object.entries(stats.platformBreakdown).map(
+                ([platform, count]) => (
+                  <div
+                    key={platform}
+                    className="flex justify-between items-center"
+                  >
+                    <span className="text-sm font-medium capitalize">
+                      {platform}
+                    </span>
+                    <Badge variant="secondary">{count} reviews</Badge>
+                  </div>
+                )
+              )}
             </CardContent>
           </Card>
         </div>
@@ -250,7 +284,7 @@ export function ReviewAutomationDashboard() {
                   {campaigns
                     .filter(c => c.status === 'sent')
                     .slice(0, 10)
-                    .map((campaign) => (
+                    .map(campaign => (
                       <div
                         key={campaign.id}
                         className="flex items-center justify-between p-4 border rounded-lg"
@@ -258,9 +292,14 @@ export function ReviewAutomationDashboard() {
                         <div className="flex items-center gap-3">
                           {getStatusIcon(campaign.status)}
                           <div>
-                            <p className="font-medium">{campaign.customer_name}</p>
+                            <p className="font-medium">
+                              {campaign.customer_name}
+                            </p>
                             <p className="text-sm text-muted-foreground">
-                              {campaign.service_type} • {new Date(campaign.completion_date).toLocaleDateString()}
+                              {campaign.service_type} •{' '}
+                              {new Date(
+                                campaign.completion_date
+                              ).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
@@ -270,7 +309,11 @@ export function ReviewAutomationDashboard() {
                           </Badge>
                           {campaign.review_url && (
                             <Button variant="outline" size="sm" asChild>
-                              <a href={campaign.review_url} target="_blank" rel="noopener noreferrer">
+                              <a
+                                href={campaign.review_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
                                 <ExternalLink className="h-3 w-3" />
                               </a>
                             </Button>
@@ -286,7 +329,7 @@ export function ReviewAutomationDashboard() {
                   {campaigns
                     .filter(c => c.status === 'pending')
                     .slice(0, 10)
-                    .map((campaign) => (
+                    .map(campaign => (
                       <div
                         key={campaign.id}
                         className="flex items-center justify-between p-4 border rounded-lg"
@@ -294,9 +337,14 @@ export function ReviewAutomationDashboard() {
                         <div className="flex items-center gap-3">
                           {getStatusIcon(campaign.status)}
                           <div>
-                            <p className="font-medium">{campaign.customer_name}</p>
+                            <p className="font-medium">
+                              {campaign.customer_name}
+                            </p>
                             <p className="text-sm text-muted-foreground">
-                              {campaign.service_type} • {new Date(campaign.completion_date).toLocaleDateString()}
+                              {campaign.service_type} •{' '}
+                              {new Date(
+                                campaign.completion_date
+                              ).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
@@ -313,7 +361,7 @@ export function ReviewAutomationDashboard() {
                   {campaigns
                     .filter(c => c.status === 'completed')
                     .slice(0, 10)
-                    .map((campaign) => (
+                    .map(campaign => (
                       <div
                         key={campaign.id}
                         className="flex items-center justify-between p-4 border rounded-lg"
@@ -321,9 +369,14 @@ export function ReviewAutomationDashboard() {
                         <div className="flex items-center gap-3">
                           {getStatusIcon(campaign.status)}
                           <div>
-                            <p className="font-medium">{campaign.customer_name}</p>
+                            <p className="font-medium">
+                              {campaign.customer_name}
+                            </p>
                             <p className="text-sm text-muted-foreground">
-                              {campaign.service_type} • {new Date(campaign.completion_date).toLocaleDateString()}
+                              {campaign.service_type} •{' '}
+                              {new Date(
+                                campaign.completion_date
+                              ).toLocaleDateString()}
                             </p>
                           </div>
                         </div>
@@ -331,7 +384,9 @@ export function ReviewAutomationDashboard() {
                           {campaign.review_rating && (
                             <div className="flex items-center gap-1">
                               <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                              <span className="text-sm font-medium">{campaign.review_rating}</span>
+                              <span className="text-sm font-medium">
+                                {campaign.review_rating}
+                              </span>
                             </div>
                           )}
                           <Badge className={getStatusColor(campaign.status)}>
@@ -345,7 +400,7 @@ export function ReviewAutomationDashboard() {
 
               <TabsContent value="all" className="space-y-4">
                 <div className="space-y-3">
-                  {campaigns.slice(0, 20).map((campaign) => (
+                  {campaigns.slice(0, 20).map(campaign => (
                     <div
                       key={campaign.id}
                       className="flex items-center justify-between p-4 border rounded-lg"
@@ -353,9 +408,14 @@ export function ReviewAutomationDashboard() {
                       <div className="flex items-center gap-3">
                         {getStatusIcon(campaign.status)}
                         <div>
-                          <p className="font-medium">{campaign.customer_name}</p>
+                          <p className="font-medium">
+                            {campaign.customer_name}
+                          </p>
                           <p className="text-sm text-muted-foreground">
-                            {campaign.service_type} • {new Date(campaign.completion_date).toLocaleDateString()}
+                            {campaign.service_type} •{' '}
+                            {new Date(
+                              campaign.completion_date
+                            ).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -363,7 +423,9 @@ export function ReviewAutomationDashboard() {
                         {campaign.review_rating && (
                           <div className="flex items-center gap-1">
                             <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                            <span className="text-sm font-medium">{campaign.review_rating}</span>
+                            <span className="text-sm font-medium">
+                              {campaign.review_rating}
+                            </span>
                           </div>
                         )}
                         <Badge className={getStatusColor(campaign.status)}>

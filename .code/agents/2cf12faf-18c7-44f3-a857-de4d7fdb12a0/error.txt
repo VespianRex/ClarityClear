@@ -1,0 +1,9 @@
+Command failed: Loaded cached credentials.
+Loaded cached credentials.
+Error initializing Gemini chat session. Full report available at: /var/folders/g7/yydw6lsx47d8qqby7cjjw7m80000gn/T/gemini-client-error-startChat-2025-09-24T08-39-17-910Z.json
+An unexpected critical error occurred:
+Error: Failed to initialize chat: model.startsWith is not a function
+    at GeminiClient.startChat (file:///opt/homebrew/Cellar/gemini-cli/0.5.5/libexec/lib/node_modules/@google/gemini-cli/node_modules/@google/gemini-cli-core/dist/src/core/client.js:184:19)
+    at async GeminiClient.initialize (file:///opt/homebrew/Cellar/gemini-cli/0.5.5/libexec/lib/node_modules/@google/gemini-cli/node_modules/@google/gemini-cli-core/dist/src/core/client.js:91:21)
+    at async Config.initialize (file:///opt/homebrew/Cellar/gemini-cli/0.5.5/libexec/lib/node_modules/@google/gemini-cli/node_modules/@google/gemini-cli-core/dist/src/config/config.js:291:9)
+    at async main (file:///opt/homebrew/Cellar/gemini-cli/0.5.5/libexec/lib/node_modules/@google/gemini-cli/dist/src/gemini.js:297:5)

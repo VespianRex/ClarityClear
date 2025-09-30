@@ -108,7 +108,7 @@ export const reviewEmailTemplates = {
       
       Service completed: ${new Date(data.completionDate).toLocaleDateString()}
       Booking reference: ${data.bookingId}
-    `
+    `,
   }),
 
   followUpRequest: (data: ReviewRequestData): EmailTemplate => ({
@@ -145,10 +145,12 @@ export const reviewEmailTemplates = {
           </p>
         </div>
       </div>
-    `
+    `,
   }),
 
-  thankYouForReview: (data: ReviewRequestData & { rating: number; platform: string }): EmailTemplate => ({
+  thankYouForReview: (
+    data: ReviewRequestData & { rating: number; platform: string }
+  ): EmailTemplate => ({
     to: data.customerEmail,
     subject: `Thank you for your ${data.rating}-star review!`,
     html: `
@@ -162,19 +164,23 @@ export const reviewEmailTemplates = {
           <h3>Hello ${data.customerName},</h3>
           <p>Thank you so much for taking the time to leave us a ${data.rating}-star review on ${data.platform}!</p>
           
-          ${data.rating >= 4 ? `
+          ${
+            data.rating >= 4
+              ? `
             <div style="background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin: 20px 0;">
               <p style="margin: 0; color: #155724;">
                 <strong>We're thrilled you had a great experience!</strong> Reviews like yours help other families in our community find reliable clearance services.
               </p>
             </div>
-          ` : `
+          `
+              : `
             <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0;">
               <p style="margin: 0; color: #856404;">
                 <strong>We appreciate your honest feedback.</strong> We'd love to discuss how we can improve. Please don't hesitate to contact us directly.
               </p>
             </div>
-          `}
+          `
+          }
           
           <p>As a token of our appreciation, here's a special offer for your next service:</p>
           
@@ -189,8 +195,8 @@ export const reviewEmailTemplates = {
           <p>Best regards,<br>The BestClear Team</p>
         </div>
       </div>
-    `
-  })
+    `,
+  }),
 };
 
 class ReviewAutomationService {
@@ -211,7 +217,7 @@ class ReviewAutomationService {
       review_request_sent: false,
       follow_up_sent: false,
       review_received: false,
-      status: 'pending'
+      status: 'pending',
     });
 
     return campaign as unknown as ReviewCampaign;
@@ -220,10 +226,11 @@ class ReviewAutomationService {
   // Send initial review request
   async sendInitialReviewRequest(campaignId: string): Promise<boolean> {
     try {
-      const campaign = await pb.collection('review_campaigns').getOne(campaignId) as ReviewCampaign;
-      
-      if (campaign.review_request_sent) {
+      const campaign = (await pb
+        .collection('review_campaigns')
+        .getOne(campaignId)) as ReviewCampaign;
 
+      if (campaign.review_request_sent) {
         return false;
       }
 
@@ -232,20 +239,20 @@ class ReviewAutomationService {
         customerEmail: campaign.customer_email,
         serviceType: campaign.service_type,
         completionDate: campaign.completion_date,
-        bookingId: campaign.booking_id
+        bookingId: campaign.booking_id,
       });
 
       const emailResult = await sendEmail(emailTemplate);
-      
+
       if (emailResult.success) {
         await pb.collection('review_campaigns').update(campaignId, {
           review_request_sent: true,
           review_request_date: new Date().toISOString(),
-          status: 'sent'
+          status: 'sent',
         });
         return true;
       }
-      
+
       return false;
     } catch (error) {
       console.error('Failed to send review request:', error);
@@ -256,8 +263,10 @@ class ReviewAutomationService {
   // Send follow-up request
   async sendFollowUpRequest(campaignId: string): Promise<boolean> {
     try {
-      const campaign = await pb.collection('review_campaigns').getOne(campaignId) as ReviewCampaign;
-      
+      const campaign = (await pb
+        .collection('review_campaigns')
+        .getOne(campaignId)) as ReviewCampaign;
+
       if (campaign.follow_up_sent || campaign.review_received) {
         return false;
       }
@@ -267,19 +276,19 @@ class ReviewAutomationService {
         customerEmail: campaign.customer_email,
         serviceType: campaign.service_type,
         completionDate: campaign.completion_date,
-        bookingId: campaign.booking_id
+        bookingId: campaign.booking_id,
       });
 
       const emailResult = await sendEmail(emailTemplate);
-      
+
       if (emailResult.success) {
         await pb.collection('review_campaigns').update(campaignId, {
           follow_up_sent: true,
-          follow_up_date: new Date().toISOString()
+          follow_up_date: new Date().toISOString(),
         });
         return true;
       }
-      
+
       return false;
     } catch (error) {
       console.error('Failed to send follow-up request:', error);
@@ -288,20 +297,25 @@ class ReviewAutomationService {
   }
 
   // Mark review as received
-  async markReviewReceived(campaignId: string, reviewData: {
-    platform: 'google' | 'facebook' | 'website' | 'trustpilot';
-    rating: number;
-    reviewUrl?: string;
-  }): Promise<boolean> {
+  async markReviewReceived(
+    campaignId: string,
+    reviewData: {
+      platform: 'google' | 'facebook' | 'website' | 'trustpilot';
+      rating: number;
+      reviewUrl?: string;
+    }
+  ): Promise<boolean> {
     try {
-      const campaign = await pb.collection('review_campaigns').getOne(campaignId) as ReviewCampaign;
-      
+      const campaign = (await pb
+        .collection('review_campaigns')
+        .getOne(campaignId)) as ReviewCampaign;
+
       await pb.collection('review_campaigns').update(campaignId, {
         review_received: true,
         review_platform: reviewData.platform,
         review_rating: reviewData.rating,
         review_url: reviewData.reviewUrl,
-        status: 'completed'
+        status: 'completed',
       });
 
       // Send thank you email
@@ -312,11 +326,11 @@ class ReviewAutomationService {
         completionDate: campaign.completion_date,
         bookingId: campaign.booking_id,
         rating: reviewData.rating,
-        platform: reviewData.platform
+        platform: reviewData.platform,
       });
 
       await sendEmail(thankYouTemplate);
-      
+
       return true;
     } catch (error) {
       console.error('Failed to mark review as received:', error);
@@ -330,7 +344,7 @@ class ReviewAutomationService {
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     const campaigns = await pb.collection('review_campaigns').getFullList({
-      filter: `review_request_sent = true && follow_up_sent = false && review_received = false && review_request_date <= "${sevenDaysAgo.toISOString()}"`
+      filter: `review_request_sent = true && follow_up_sent = false && review_received = false && review_request_date <= "${sevenDaysAgo.toISOString()}"`,
     });
 
     return campaigns as unknown as ReviewCampaign[];
@@ -339,7 +353,7 @@ class ReviewAutomationService {
   // Get pending campaigns (completed jobs without review requests)
   async getPendingCampaigns(): Promise<ReviewCampaign[]> {
     const campaigns = await pb.collection('review_campaigns').getFullList({
-      filter: 'status = "pending"'
+      filter: 'status = "pending"',
     });
 
     return campaigns as unknown as ReviewCampaign[];
@@ -354,7 +368,7 @@ class ReviewAutomationService {
     const results = {
       reviewRequestsSent: 0,
       followUpsSent: 0,
-      errors: [] as string[]
+      errors: [] as string[],
     };
 
     try {
@@ -365,7 +379,9 @@ class ReviewAutomationService {
         if (success) {
           results.reviewRequestsSent++;
         } else {
-          results.errors.push(`Failed to send review request for campaign ${campaign.id}`);
+          results.errors.push(
+            `Failed to send review request for campaign ${campaign.id}`
+          );
         }
       }
 
@@ -376,7 +392,9 @@ class ReviewAutomationService {
         if (success) {
           results.followUpsSent++;
         } else {
-          results.errors.push(`Failed to send follow-up for campaign ${campaign.id}`);
+          results.errors.push(
+            `Failed to send follow-up for campaign ${campaign.id}`
+          );
         }
       }
     } catch (error: any) {

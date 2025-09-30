@@ -1,0 +1,8 @@
+This comprehensive approach provides:
+- **Real-time monitoring** via `tee` and remote log tailing
+- **Step-by-step execution** to isolate problems  
+- **Resume capability** to avoid restarting from scratch
+- **Diagnostic tools** to understand current state
+- **Explicit timeouts** to prevent indefinite hanging
+
+Start with the diagnostic script to understand the current situation, then implement the monitoring version for your next build attempt.

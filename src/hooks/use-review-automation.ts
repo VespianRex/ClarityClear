@@ -6,18 +6,21 @@ import { reviewAutomation, ReviewCampaign } from '@/lib/review-automation';
 
 // Hook for review campaigns
 export function useReviewCampaigns() {
-  const { data, error, isLoading, mutate } = useSWR('review-campaigns', async () => {
-    return await pb.collection('review_campaigns').getFullList({
-      sort: '-created',
-      expand: 'booking_id'
-    });
-  });
+  const { data, error, isLoading, mutate } = useSWR(
+    'review-campaigns',
+    async () => {
+      return await pb.collection('review_campaigns').getFullList({
+        sort: '-created',
+        expand: 'booking_id',
+      });
+    }
+  );
 
   return {
     campaigns: (data as unknown as ReviewCampaign[]) || [],
     isLoading,
     error,
-    refresh: mutate
+    refresh: mutate,
   };
 }
 
@@ -25,7 +28,7 @@ export function useReviewCampaigns() {
 export function useReviewStats() {
   const { data, error, isLoading } = useSWR('review-stats', async () => {
     const campaigns = await pb.collection('review_campaigns').getFullList();
-    
+
     const stats = {
       totalCampaigns: campaigns.length,
       reviewRequestsSent: campaigns.filter(c => c.review_request_sent).length,
@@ -36,23 +39,30 @@ export function useReviewStats() {
         google: 0,
         facebook: 0,
         website: 0,
-        trustpilot: 0
-      }
+        trustpilot: 0,
+      },
     };
 
-    const reviewsWithRating = campaigns.filter(c => c.review_received && c.review_rating);
+    const reviewsWithRating = campaigns.filter(
+      c => c.review_received && c.review_rating
+    );
     if (reviewsWithRating.length > 0) {
-      stats.averageRating = reviewsWithRating.reduce((sum, c) => sum + (c.review_rating || 0), 0) / reviewsWithRating.length;
+      stats.averageRating =
+        reviewsWithRating.reduce((sum, c) => sum + (c.review_rating || 0), 0) /
+        reviewsWithRating.length;
     }
 
     if (stats.reviewRequestsSent > 0) {
-      stats.responseRate = (stats.reviewsReceived / stats.reviewRequestsSent) * 100;
+      stats.responseRate =
+        (stats.reviewsReceived / stats.reviewRequestsSent) * 100;
     }
 
     // Platform breakdown
     campaigns.forEach(c => {
       if (c.review_received && c.review_platform) {
-        stats.platformBreakdown[c.review_platform as keyof typeof stats.platformBreakdown]++;
+        stats.platformBreakdown[
+          c.review_platform as keyof typeof stats.platformBreakdown
+        ]++;
       }
     });
 
@@ -66,10 +76,10 @@ export function useReviewStats() {
       reviewsReceived: 0,
       averageRating: 0,
       responseRate: 0,
-      platformBreakdown: { google: 0, facebook: 0, website: 0, trustpilot: 0 }
+      platformBreakdown: { google: 0, facebook: 0, website: 0, trustpilot: 0 },
     },
     isLoading,
-    error
+    error,
   };
 }
 
@@ -92,20 +102,27 @@ export function useReviewAutomation() {
 
   const sendReviewRequest = async (campaignId: string) => {
     try {
-      const success = await reviewAutomation.sendInitialReviewRequest(campaignId);
+      const success =
+        await reviewAutomation.sendInitialReviewRequest(campaignId);
       return { success };
     } catch (error: any) {
       return { success: false, error: error.message };
     }
   };
 
-  const markReviewReceived = async (campaignId: string, reviewData: {
-    platform: 'google' | 'facebook' | 'website' | 'trustpilot';
-    rating: number;
-    reviewUrl?: string;
-  }) => {
+  const markReviewReceived = async (
+    campaignId: string,
+    reviewData: {
+      platform: 'google' | 'facebook' | 'website' | 'trustpilot';
+      rating: number;
+      reviewUrl?: string;
+    }
+  ) => {
     try {
-      const success = await reviewAutomation.markReviewReceived(campaignId, reviewData);
+      const success = await reviewAutomation.markReviewReceived(
+        campaignId,
+        reviewData
+      );
       return { success };
     } catch (error: any) {
       return { success: false, error: error.message };
@@ -125,6 +142,6 @@ export function useReviewAutomation() {
     createCampaign,
     sendReviewRequest,
     markReviewReceived,
-    runAutomation
+    runAutomation,
   };
 }

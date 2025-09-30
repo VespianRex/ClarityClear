@@ -2,7 +2,7 @@
 const React = require('react');
 
 // Create a generic mock component for all lucide icons
-const createMockIcon = (name) => {
+const createMockIcon = name => {
   const MockIcon = React.forwardRef((props, ref) => {
     return React.createElement('svg', {
       ...props,

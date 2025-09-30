@@ -1,0 +1,103 @@
+Based on my analysis of the deployment documentation, build scripts, and Ansible roles, I'll create a comprehensive remediation plan:
+
+# Alpine Edge VM Deployment Remediation Plan
+
+## 1. Issue Summary and Prior Steps Analysis
+**Prior work**: Claude successfully built custom Alpine image with SSH but failed on network connectivity. VM 9008 exists and boots but SSH/network unreachable despite comprehensive setup script including DHCP, SSH daemon, and QEMU guest agent configuration.
+
+**Verification gaps**: No console-level debugging performed to validate actual boot process, service status, or network configuration within the VM.
+
+## 2. Console Access and Boot Validation
+**Action**: Access VM 9008 via Proxmox console to verify boot completion
+- Check if Alpine boots to login prompt
+- Verify OpenRC service startup messages during boot
+- Confirm filesystem mount and system initialization
+
+**Rationale**: Basic connectivity assumes successful boot - must validate this first.
+
+## 3. Network Interface and DHCP Verification
+**Action**: Console commands to validate networking stack
+- `ip addr show` - verify eth0 interface exists and gets IP
+- `ip route show` - confirm default gateway assignment
+- `ping 192.168.0.1` - test local network connectivity
+- `rc-service networking status` - verify network service
+
+**Rationale**: DHCP configuration in `infra/build-alpine-image-corrected.sh:95-102` may not be working properly in Alpine's OpenRC environment.
+
+## 4. SSH Service Status and Configuration Audit
+**Action**: Verify SSH daemon operation and configuration
+- `rc-service sshd status` - check if SSH daemon running
+- `netstat -tlnp | grep :22` - verify SSH listening on port 22
+- Review `/var/log/messages` for SSH startup errors
+- Test SSH config syntax: `sshd -t`
+
+**Rationale**: Custom SSH config in build script may have compatibility issues with Alpine's OpenSSH package.
+
+## 5. QEMU Guest Agent Integration Check
+**Action**: Validate guest agent functionality
+- `rc-service qemu-guest-agent status` - verify agent service
+- Check if virtio drivers loaded: `lsmod | grep virtio`
+- Validate agent socket: `ls -la /dev/virtio-ports/`
+
+**Rationale**: Guest agent failure blocks IP discovery from Proxmox host, indicating potential virtio driver or service issues.
+
+## 6. Alpine Image Rebuild with Networking Fixes
+**Action**: Modify `infra/build-alpine-image-corrected.sh` with validated fixes
+- Add explicit virtio network driver loading
+- Replace `/etc/network/interfaces` with Alpine-specific udhcpc configuration
+- Add debugging/logging for network startup
+- Include additional network troubleshooting tools (ip, dhcpcd)
+
+**Rationale**: Alpine's networking differs from Debian - may need Alpine-native DHCP client and configuration format.
+
+## 7. Ansible Role Alpine Compatibility Update
+**Action**: Review and update `infra/ansible/roles/edge/tasks/main.yml` for Alpine specifics
+- Replace `service` module calls with Alpine OpenRC equivalents
+- Update package names for Alpine (line 10-24 needs verification)
+- Add Alpine-specific service management commands
+- Validate Docker installation method for Alpine
+
+**Rationale**: Current Ansible role assumes systemd but Alpine uses OpenRC - service management commands will fail.
+
+## 8. Alternative DHCP Client Implementation
+**Action**: If standard DHCP fails, implement busybox udhcpc alternative
+- Modify setup script to use `udhcpc` instead of dhclient
+- Add udhcpc script in `/usr/share/udhcpc/default.script`
+- Test with manual DHCP request: `udhcpc -i eth0`
+
+**Rationale**: Alpine's busybox-based DHCP client may be more reliable than standard dhclient.
+
+## 9. Network Bridge and MAC Address Investigation  
+**Action**: Validate Proxmox network configuration
+- Verify vmbr0 bridge allows VM MAC `BC:24:11:2A:72:22`
+- Check if MAC conflicts with other VMs
+- Test with different network adapter (e1000 vs virtio)
+
+**Rationale**: Networking issues could be at hypervisor level rather than guest OS.
+
+## 10. Service Startup Order and Dependencies
+**Action**: Review and fix OpenRC service dependencies
+- Add explicit dependency: networking before sshd
+- Add dependency: hostname before sshd  
+- Verify all services in runlevels: `rc-update show`
+- Add network-online target equivalent for Alpine
+
+**Rationale**: SSH may start before networking is fully configured, causing binding failures.
+
+## 11. Comprehensive Connectivity Testing
+**Action**: Create validation script `infra/test-alpine-connectivity.sh`
+- Test each network component individually
+- Validate from both guest (console) and host (SSH scan)
+- Include timeout-based connection attempts
+- Document working/failing components
+
+**Rationale**: Systematic testing will identify the exact failure point rather than assuming SSH is the only issue.
+
+## 12. Debian Fallback Implementation (Last Resort)
+**Action**: Only if Alpine fixes fail after steps 1-11
+- Modify Ansible inventory to use working Debian edge VMs
+- Update `infra/ansible/roles/edge` to be Debian-compatible  
+- Deploy edge services on proven Debian infrastructure
+- Document Alpine issues for future resolution
+
+**Rationale**: Infrastructure delivery takes priority over specific OS choice - Debian VMs are confirmed working.

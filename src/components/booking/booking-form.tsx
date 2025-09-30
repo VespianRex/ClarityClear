@@ -1,11 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import {
-  useForm,
-  FormProvider,
-  useFormContext,
-} from 'react-hook-form';
+import { useForm, FormProvider, useFormContext } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   BookingFormSchema,
@@ -38,12 +34,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { cn } from '@/lib/utils';
-import {
-  CalendarIcon,
-  CheckCircle,
-  User,
-  Package,
-} from 'lucide-react';
+import { CalendarIcon, CheckCircle, User, Package } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 
@@ -130,11 +121,7 @@ export function BookingForm() {
     },
   });
 
-  const {
-    trigger,
-    handleSubmit,
-    getValues,
-  } = methods;
+  const { trigger, handleSubmit, getValues } = methods;
 
   const handleNext = async () => {
     const currentStepSchema = steps[currentStep].schema;

@@ -12,16 +12,14 @@ interface FadeInSectionProps {
 }
 
 export const FadeInSection = forwardRef<HTMLDivElement, FadeInSectionProps>(
-  function FadeInSection({
-    children,
-    className = '',
-    delay = 0,
-    direction = 'up',
-    duration = 0.6,
-  }, forwardedRef) {
+  function FadeInSection(
+    { children, className = '', delay = 0, direction = 'up', duration = 0.6 },
+    forwardedRef
+  ) {
     const internalRef = useRef<HTMLDivElement>(null);
     // Use the forwarded ref if provided, otherwise use internal ref
-    const ref = (forwardedRef as React.RefObject<HTMLDivElement>) || internalRef;
+    const ref =
+      (forwardedRef as React.RefObject<HTMLDivElement>) || internalRef;
     const isInView = useInView(ref, { once: true, margin: '-100px' });
 
     const directionOffset = {

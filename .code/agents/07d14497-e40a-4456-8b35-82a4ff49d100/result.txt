@@ -1,0 +1,250 @@
+Now I'll provide detailed monitoring and debugging solutions for your Alpine image build script timeout issue:
+
+## **Problem Analysis**
+The timeout (exit 124) occurs because the local CLI terminates after ~10 seconds while the remote `alpine-make-vm-image` process continues running. The issue is on lines 130-138 where the heavy Alpine image building happens.
+
+## **Solution 1: Remote Logging with Tee**
+
+Create a modified version that logs all output remotely:
+
+```bash
+# Modified script with remote logging
+ssh -i ~/.ssh/id_ed25519_clarity root@192.168.0.33 << 'ENDSSH'
+set -euo pipefail
+
+# Create log files
+LOG_DIR="/tmp/alpine-build-logs"
+mkdir -p $LOG_DIR
+BUILD_LOG="$LOG_DIR/build.log"
+ERROR_LOG="$LOG_DIR/error.log"
+
+echo "🔨 Starting Alpine build - logging to $BUILD_LOG"
+date | tee -a $BUILD_LOG
+
+# Setup and download (existing code...)
+# ...
+
+# The critical part - build with full logging
+echo "🏗️ Building Alpine VM image..." | tee -a $BUILD_LOG
+
+./alpine-make-vm-image \
+    --image-format qcow2 \
+    --image-size 3G \
+    --serial-console \
+    --branch v3.20 \
+    --packages "openssh openssh-server sudo qemu-guest-agent bash openrc curl wget ifupdown-ng iproute2" \
+    --script-chroot \
+    alpine-ssh.qcow2 \
+    ./setup-alpine-ssh.sh 2>&1 | tee -a $BUILD_LOG
+
+echo "Build completed at $(date)" | tee -a $BUILD_LOG
+ENDSSH
+```
+
+## **Solution 2: Background Process with Screen/Tmux**
+
+```bash
+#!/bin/bash
+# build-alpine-background.sh
+
+echo "🔨 Starting Alpine build in background session..."
+
+# Start the build in a screen session on remote host
+ssh -i ~/.ssh/id_ed25519_clarity root@192.168.0.33 << 'ENDSSH'
+# Install screen if not available
+apk add screen 2>/dev/null || true
+
+# Start screen session named 'alpine-build'
+screen -dmS alpine-build bash -c '
+    set -euo pipefail
+    LOG_FILE="/tmp/alpine-build.log"
+    echo "Build started at $(date)" > $LOG_FILE
+    
+    cd /tmp/alpine-builder || mkdir -p /tmp/alpine-builder
+    cd /tmp/alpine-builder
+    
+    # Your existing build script content here, with logging
+    wget -q -O alpine-make-vm-image https://raw.githubusercontent.com/alpinelinux/alpine-make-vm-image/v0.13.3/alpine-make-vm-image 2>&1 | tee -a $LOG_FILE
+    chmod +x alpine-make-vm-image
+    
+    # Create setup script...
+    cat > setup-alpine-ssh.sh << "SETUP"
+    # Your setup script content here
+SETUP
+    
+    ./alpine-make-vm-image \
+        --image-format qcow2 \
+        --image-size 3G \
+        --serial-console \
+        --branch v3.20 \
+        --packages "openssh openssh-server sudo qemu-guest-agent bash openrc curl wget ifupdown-ng iproute2" \
+        --script-chroot \
+        alpine-ssh.qcow2 \
+        ./setup-alpine-ssh.sh 2>&1 | tee -a $LOG_FILE
+    
+    echo "Build completed at $(date)" >> $LOG_FILE
+'
+ENDSSH
+
+echo "✅ Build started in background. Monitor with:"
+echo "ssh -i ~/.ssh/id_ed25519_clarity root@192.168.0.33 'screen -r alpine-build'"
+echo "Or tail logs with:"
+echo "ssh -i ~/.ssh/id_ed25519_clarity root@192.168.0.33 'tail -f /tmp/alpine-build.log'"
+```
+
+## **Solution 3: Incremental Monitoring Script**
+
+```bash
+#!/bin/bash
+# monitor-alpine-build.sh
+
+REMOTE_HOST="root@192.168.0.33"
+SSH_KEY="~/.ssh/id_ed25519_clarity"
+LOG_FILE="/tmp/alpine-build.log"
+
+echo "🔍 Monitoring Alpine build progress..."
+
+# Function to check if build is running
+check_build_status() {
+    ssh -i $SSH_KEY $REMOTE_HOST "ps aux | grep alpine-make-vm-image | grep -v grep" 2>/dev/null
+}
+
+# Function to tail logs
+tail_remote_log() {
+    ssh -i $SSH_KEY $REMOTE_HOST "tail -f $LOG_FILE 2>/dev/null || echo 'Log file not found yet...'"
+}
+
+# Function to check build artifacts
+check_artifacts() {
+    ssh -i $SSH_KEY $REMOTE_HOST "ls -la /tmp/alpine-builder/ 2>/dev/null || echo 'Build directory not found'"
+}
+
+# Main monitoring loop
+while true; do
+    echo "==================== $(date) ===================="
+    
+    if check_build_status; then
+        echo "✅ Build process is running"
+        echo "📋 Latest log entries:"
+        ssh -i $SSH_KEY $REMOTE_HOST "tail -20 $LOG_FILE 2>/dev/null || echo 'No logs yet'"
+    else
+        echo "⚠️ Build process not detected"
+        echo "📁 Checking artifacts:"
+        check_artifacts
+        
+        # Check if image was created
+        if ssh -i $SSH_KEY $REMOTE_HOST "[ -f /tmp/alpine-builder/alpine-ssh.qcow2 ]"; then
+            echo "🎉 Build appears to be complete!"
+            break
+        fi
+    fi
+    
+    echo ""
+    sleep 30
+done
+```
+
+## **Solution 4: Manual Step-by-Step Execution**
+
+Break the script into phases for manual execution:
+
+```bash
+# Phase 1: Setup and download
+ssh -i ~/.ssh/id_ed25519_clarity root@192.168.0.33 << 'PHASE1'
+echo "Phase 1: Setup and Download"
+rm -rf /tmp/alpine-builder
+mkdir -p /tmp/alpine-builder
+cd /tmp/alpine-builder
+wget -q -O alpine-make-vm-image https://raw.githubusercontent.com/alpinelinux/alpine-make-vm-image/v0.13.3/alpine-make-vm-image
+chmod +x alpine-make-vm-image
+echo "Setup complete - ready for build phase"
+PHASE1
+
+# Phase 2: Create setup script
+ssh -i ~/.ssh/id_ed25519_clarity root@192.168.0.33 << 'PHASE2'
+cd /tmp/alpine-builder
+cat > setup-alpine-ssh.sh << 'SETUP'
+# Your setup script content here
+SETUP
+chmod +x setup-alpine-ssh.sh
+echo "Setup script created"
+PHASE2
+
+# Phase 3: Start build (run this separately and monitor)
+echo "Starting build phase - this will run in background"
+ssh -i ~/.ssh/id_ed25519_clarity root@192.168.0.33 'cd /tmp/alpine-builder && nohup ./alpine-make-vm-image --image-format qcow2 --image-size 3G --serial-console --branch v3.20 --packages "openssh openssh-server sudo qemu-guest-agent bash openrc curl wget ifupdown-ng iproute2" --script-chroot alpine-ssh.qcow2 ./setup-alpine-ssh.sh > /tmp/alpine-build.log 2>&1 &'
+```
+
+## **Solution 5: SSH with Keepalives and No Timeout**
+
+```bash
+#!/bin/bash
+# build-alpine-no-timeout.sh
+
+echo "🔨 Building Alpine with SSH keepalives (no timeout)..."
+
+# Use SSH with keepalives and no timeout
+ssh -i ~/.ssh/id_ed25519_clarity \
+    -o ServerAliveInterval=30 \
+    -o ServerAliveCountMax=3 \
+    -o ConnectTimeout=10 \
+    -tt root@192.168.0.33 << 'ENDSSH'
+
+set -euo pipefail
+exec > >(tee /tmp/alpine-build-full.log) 2>&1
+
+echo "Build started at $(date)"
+
+# Use stdbuf to force unbuffered output
+export PYTHONUNBUFFERED=1
+
+# Your existing script content with unbuffered commands
+cd /tmp && rm -rf alpine-builder && mkdir alpine-builder && cd alpine-builder
+
+wget -v -O alpine-make-vm-image https://raw.githubusercontent.com/alpinelinux/alpine-make-vm-image/v0.13.3/alpine-make-vm-image
+chmod +x alpine-make-vm-image
+
+# Create setup script (your existing content)
+# ...
+
+# Run with verbose output and progress indication
+stdbuf -oL -eL ./alpine-make-vm-image \
+    --image-format qcow2 \
+    --image-size 3G \
+    --serial-console \
+    --branch v3.20 \
+    --packages "openssh openssh-server sudo qemu-guest-agent bash openrc curl wget ifupdown-ng iproute2" \
+    --script-chroot \
+    alpine-ssh.qcow2 \
+    ./setup-alpine-ssh.sh
+
+echo "Build completed at $(date)"
+ENDSSH
+```
+
+## **Recommended Approach**
+
+1. **Start with Solution 2** (Screen/Tmux background) for long-running builds
+2. **Use Solution 3** (monitoring script) to track progress
+3. **Keep Solution 4** (manual phases) as backup for debugging
+
+## **Commands to Monitor Progress**
+
+```bash
+# Check if build is running
+ssh -i ~/.ssh/id_ed25519_clarity root@192.168.0.33 "ps aux | grep alpine-make"
+
+# Tail logs in real-time
+ssh -i ~/.ssh/id_ed25519_clarity root@192.168.0.33 "tail -f /tmp/alpine-build.log"
+
+# Check build directory
+ssh -i ~/.ssh/id_ed25519_clarity root@192.168.0.33 "ls -la /tmp/alpine-builder/"
+
+# Connect to screen session
+ssh -i ~/.ssh/id_ed25519_clarity root@192.168.0.33 "screen -r alpine-build"
+
+# Check system resources during build
+ssh -i ~/.ssh/id_ed25519_clarity root@192.168.0.33 "top -b -n 1 | head -20"
+```
+
+The key insight is that the timeout is from your local CLI, not the remote process. Using background execution with logging gives you the best of both worlds: no local timeout and full visibility into progress.

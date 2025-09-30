@@ -1,0 +1,116 @@
+Based on comprehensive research from multiple search agents, here's the definitive documentation for configuring Synology NFS exports to allow subdirectory mounting:
+
+## Official Synology NFS Configuration Resources
+
+### Primary Documentation Sources:
+1. **Official Synology KB Article**: https://kb.synology.com/en-us/DSM/tutorial/How_to_access_files_on_Synology_NAS_within_the_local_network_NFS
+2. **DSM 7.0 User Guide (PDF)**: https://global.download.synology.com/download/Document/Software/UserGuide/Os/DSM/7.0/enu/Syno_UsersGuide_NAServer_7.0_enu.pdf
+3. **NFS Service Help**: https://kb.synology.com/en-af/DSM/help/DSM/AdminCenter/file_winmacnfs_nfs?version=7
+
+## Configuring NFS for Subdirectory Access
+
+### Step 1: Enable NFS Service
+- Navigate to **Control Panel > File Services > NFS**
+- Check **"Enable NFS service"**
+- Click **Apply**
+
+### Step 2: Configure Shared Folder Permissions
+- Go to **Control Panel > Shared Folder**
+- Select `/volume1/proxmox-shared`
+- Click **Edit > NFS Permissions**
+- Click **Create** and configure:
+  - **Hostname or IP**: `192.168.0.163` (your Edge VM IP)
+  - **Privilege**: Read/Write
+  - **Squash**: Map root to admin
+  - **Security**: sys
+  - **Enable asynchronous**: Checked (for performance)
+
+### Step 3: Critical Export Options for Subdirectory Access
+
+For your specific case with subdirectories like `/volume1/proxmox-shared/traefik`, use these export options:
+
+```
+/volume1/proxmox-shared 192.168.0.163(rw,async,no_root_squash,no_subtree_check,anonuid=1023,anongid=1023)
+```
+
+**Key Options Explained:**
+- `no_root_squash`: Allows root user to maintain privileges (essential for container mounts)
+- `no_subtree_check`: Prevents access denied errors on subdirectories
+- `async`: Improves performance
+- `anonuid=1023,anongid=1023`: Maps anonymous users to Synology admin user
+
+### Step 4: Network and Service Requirements
+
+**Required Ports (ensure these are open):**
+- **111** (TCP/UDP) - Portmapper (rpcbind)
+- **2049** (TCP/UDP) - NFS service
+- **892** (TCP/UDP) - Mountd service
+- **4045** (TCP/UDP) - Network lock manager
+
+**Essential Services:**
+- `rpcbind` (portmapper)
+- `rpc.statd` (for NFS locking)
+- Network lock manager (lockd)
+
+### Step 5: Troubleshooting "Access Denied" Errors
+
+**Common Causes & Solutions:**
+
+1. **Subdirectory Access Issue:**
+   - Add `no_subtree_check` to export options
+   - Ensure parent directory has proper permissions
+
+2. **UID/GID Mismatch:**
+   - Use `anonuid=1023,anongid=1023` (Synology admin user)
+   - Verify consistent user mapping between NAS and client
+
+3. **Root Privileges:**
+   - Use `no_root_squash` for container environments
+   - Only use in trusted networks
+
+### Step 6: Verification Commands
+
+**On Synology NAS (via SSH):**
+```bash
+# Check NFS exports
+showmount -e localhost
+
+# Verify RPC services
+rpcinfo -p localhost
+```
+
+**On Edge VM Client:**
+```bash
+# Test NFS connectivity
+showmount -e 192.168.0.55
+
+# Mount with verbose output
+mount -t nfs -v 192.168.0.55:/volume1/proxmox-shared/traefik /mnt/traefik
+```
+
+### Recommended Mount Command for Your Environment
+
+```bash
+mount -t nfs -o vers=3,proto=tcp,rsize=32768,wsize=32768,hard,nolock 192.168.0.55:/volume1/proxmox-shared/traefik /mnt/traefik
+```
+
+**Options Explained:**
+- `vers=3`: Use NFSv3 (more reliable than v4 for some Synology versions)
+- `nolock`: Bypasses file locking issues
+- `hard`: Ensures reliability
+- Large `rsize/wsize`: Improves performance
+
+### Advanced Configuration Notes
+
+**For Container Environments (Docker/LXC):**
+- Always use `no_root_squash`
+- Consider `no_subtree_check` for nested directory access
+- Map container UIDs to Synology admin user (1023:1023)
+
+**Security Best Practices:**
+- Restrict access to specific IP addresses
+- Use the most restrictive permissions possible
+- Regularly audit NFS permissions
+- Consider VPN for remote access
+
+This configuration should resolve your "access denied" error when mounting subdirectories from your Synology NAS to the Edge VM.

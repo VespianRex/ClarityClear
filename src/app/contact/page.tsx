@@ -147,7 +147,8 @@ export default function ContactPage() {
             Service Area Coverage
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Check if we cover your area and get information about our service zones and any additional fees.
+            Check if we cover your area and get information about our service
+            zones and any additional fees.
           </p>
         </div>
         <div className="max-w-4xl mx-auto">
