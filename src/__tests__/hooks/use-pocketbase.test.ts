@@ -35,16 +35,14 @@ jest.mock('@/lib/pocketbase', () => ({
       .mockResolvedValue([
         { id: '1', customer_name: 'John Doe', rating: 5, approved: true },
       ]),
-    getFAQs: jest
-      .fn()
-      .mockResolvedValue([
-        {
-          id: '1',
-          question: 'Test question?',
-          answer: 'Test answer',
-          published: true,
-        },
-      ]),
+    getFAQs: jest.fn().mockResolvedValue([
+      {
+        id: '1',
+        question: 'Test question?',
+        answer: 'Test answer',
+        published: true,
+      },
+    ]),
     createBooking: jest.fn().mockResolvedValue({ id: 'booking-123' }),
   },
 }));
