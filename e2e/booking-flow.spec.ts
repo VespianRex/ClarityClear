@@ -12,22 +12,27 @@ test.describe('Booking Flow', () => {
     // Check form heading
     await expect(page.getByRole('heading', { name: /book your collection/i })).toBeVisible();
 
-    // Check for service selection section
-    await expect(page.getByText(/service selection/i)).toBeVisible();
+    // Check for service selection section (use first() to handle multiple matches)
+    await expect(page.getByText(/service selection/i).first()).toBeVisible();
   });
 
   test('should complete full booking flow', async ({ page }) => {
+    // Wait for form to be interactive
+    await page.waitForLoadState('networkidle');
+
     // Step 1: Service Selection
-    await page.getByRole('combobox', { name: /service type/i }).click();
+    const serviceTypeSelect = page.getByRole('combobox', { name: /service type/i });
+    await serviceTypeSelect.waitFor({ state: 'visible', timeout: 10000 });
+    await serviceTypeSelect.click();
     await page.getByRole('option', { name: /house clearance/i }).click();
-    
+
     await page.getByRole('combobox', { name: /property size/i }).click();
     await page.getByRole('option', { name: /2 bedroom/i }).click();
-    
+
     await page.getByRole('combobox', { name: /urgency/i }).click();
     await page.getByRole('option', { name: /within a week/i }).click();
-    
-    await page.getByRole('button', { name: /next/i }).click();
+
+    await page.getByRole('button', { name: /next/i }).first().click();
     
     // Step 2: Property Details
     await expect(page.getByRole('heading', { name: /property details/i })).toBeVisible();
@@ -66,26 +71,31 @@ test.describe('Booking Flow', () => {
 
   test('should validate required fields', async ({ page }) => {
     // Try to proceed without filling required fields
-    await page.getByRole('button', { name: /next/i }).click();
+    // Use first() to avoid strict mode violation with Next.js dev tools button
+    await page.getByRole('button', { name: /next/i }).first().click();
 
     // Should stay on booking page or show validation
     // Either still on booking page or validation message appears
-    const onBookingPage = await page.getByText(/service selection|book your collection/i).isVisible();
+    const onBookingPage = await page.getByText(/service selection|book your collection/i).first().isVisible();
     expect(onBookingPage).toBeTruthy();
   });
 
   test('should allow navigation between steps', async ({ page }) => {
+    // Wait for form to load
+    await page.waitForLoadState('networkidle');
+
     // Fill first step
+    await page.getByRole('combobox', { name: /service type/i }).waitFor({ timeout: 10000 });
     await page.getByRole('combobox', { name: /service type/i }).click();
     await page.getByRole('option', { name: /house clearance/i }).click();
-    
+
     await page.getByRole('combobox', { name: /property size/i }).click();
     await page.getByRole('option', { name: /1 bedroom/i }).click();
-    
+
     await page.getByRole('combobox', { name: /urgency/i }).click();
     await page.getByRole('option', { name: /flexible/i }).click();
-    
-    await page.getByRole('button', { name: /next/i }).click();
+
+    await page.getByRole('button', { name: /next/i }).first().click();
     
     // Go to step 2
     await expect(page.getByRole('heading', { name: /property details/i })).toBeVisible();
@@ -106,14 +116,19 @@ test.describe('Booking Flow', () => {
   });
 
   test('should handle form persistence', async ({ page }) => {
+    // Wait for form to load
+    await page.waitForLoadState('networkidle');
+
     // Fill some data
-    await page.getByRole('combobox', { name: /service type/i }).click();
+    const serviceSelect = page.getByRole('combobox', { name: /service type/i });
+    await serviceSelect.waitFor({ timeout: 10000 });
+    await serviceSelect.click();
     await page.getByRole('option', { name: /office clearance/i }).click();
-    
+
     // Navigate away and back
     await page.goto('/');
     await page.goto('/booking');
-    
+
     // Data should be preserved (if implemented)
     // This test checks if form state persistence is working
   });
