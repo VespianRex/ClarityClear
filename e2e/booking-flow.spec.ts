@@ -20,16 +20,16 @@ test.describe('Booking Flow', () => {
     // Wait for form to be interactive
     await page.waitForLoadState('networkidle');
 
-    // Step 1: Service Selection
-    const serviceTypeSelect = page.getByRole('combobox', { name: /service type/i });
+    // Step 1: Service Selection - use placeholder text to find selects
+    const serviceTypeSelect = page.getByPlaceholder('Select a service');
     await serviceTypeSelect.waitFor({ state: 'visible', timeout: 10000 });
     await serviceTypeSelect.click();
     await page.getByRole('option', { name: /house clearance/i }).click();
 
-    await page.getByRole('combobox', { name: /property size/i }).click();
+    await page.getByPlaceholder('Select property size').click();
     await page.getByRole('option', { name: /2 bedroom/i }).click();
 
-    await page.getByRole('combobox', { name: /urgency/i }).click();
+    await page.getByPlaceholder(/when do you need this done/i).click();
     await page.getByRole('option', { name: /within a week/i }).click();
 
     await page.getByRole('button', { name: /next/i }).first().click();
@@ -84,15 +84,15 @@ test.describe('Booking Flow', () => {
     // Wait for form to load
     await page.waitForLoadState('networkidle');
 
-    // Fill first step
-    await page.getByRole('combobox', { name: /service type/i }).waitFor({ timeout: 10000 });
-    await page.getByRole('combobox', { name: /service type/i }).click();
+    // Fill first step - use placeholders
+    await page.getByPlaceholder('Select a service').waitFor({ timeout: 10000 });
+    await page.getByPlaceholder('Select a service').click();
     await page.getByRole('option', { name: /house clearance/i }).click();
 
-    await page.getByRole('combobox', { name: /property size/i }).click();
+    await page.getByPlaceholder('Select property size').click();
     await page.getByRole('option', { name: /1 bedroom/i }).click();
 
-    await page.getByRole('combobox', { name: /urgency/i }).click();
+    await page.getByPlaceholder(/when do you need this done/i).click();
     await page.getByRole('option', { name: /flexible/i }).click();
 
     await page.getByRole('button', { name: /next/i }).first().click();
@@ -119,8 +119,8 @@ test.describe('Booking Flow', () => {
     // Wait for form to load
     await page.waitForLoadState('networkidle');
 
-    // Fill some data
-    const serviceSelect = page.getByRole('combobox', { name: /service type/i });
+    // Fill some data - use placeholder
+    const serviceSelect = page.getByPlaceholder('Select a service');
     await serviceSelect.waitFor({ timeout: 10000 });
     await serviceSelect.click();
     await page.getByRole('option', { name: /office clearance/i }).click();
@@ -138,8 +138,8 @@ test.describe('Booking Flow', () => {
       // Check main heading visible on mobile
       await expect(page.getByRole('heading', { name: /book your collection/i })).toBeVisible();
 
-      // Check service selection text visible
-      await expect(page.getByText(/service selection/i)).toBeVisible();
+      // Check service selection text visible (use first() for multiple matches)
+      await expect(page.getByText(/service selection/i).first()).toBeVisible();
     }
   });
 });

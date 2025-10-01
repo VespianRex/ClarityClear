@@ -41,9 +41,9 @@ test.describe('Homepage', () => {
     const gallerySection = page.locator('#gallery');
     await expect(gallerySection).toBeVisible();
 
-    // Either shows gallery items or loading state
-    const hasContent = await page.getByText('Before').isVisible().catch(() => false);
-    const hasLoading = await page.locator('.animate-spin').isVisible();
+    // Either shows gallery items or loading state (use first() for multiple spinners)
+    const hasContent = await page.getByText('Before').first().isVisible().catch(() => false);
+    const hasLoading = await page.locator('.animate-spin').first().isVisible();
 
     // One of these should be true
     expect(hasContent || hasLoading).toBeTruthy();
