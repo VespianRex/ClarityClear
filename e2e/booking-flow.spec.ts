@@ -20,26 +20,17 @@ test.describe('Booking Flow', () => {
     // Wait for form to be interactive
     await page.waitForLoadState('networkidle');
 
-    // Step 1: Service Selection - find select by text content
-    const serviceTypeSelect = page.getByText('Select a service').first();
-
-    // Check if form is interactive (skip test if not)
-    const isVisible = await serviceTypeSelect.isVisible({ timeout: 5000 }).catch(() => false);
-    if (!isVisible) {
-      console.log('Form not interactive - skipping test');
-      return; // Skip test if form not ready
-    }
-
-    await serviceTypeSelect.click();
+    // Step 1: Service Selection - click the select trigger button
+    await page.getByText('Select a service').click();
     await page.getByRole('option', { name: /house clearance/i }).click();
 
-    await page.getByPlaceholder('Select property size').click();
+    await page.getByText('Select property size').click();
     await page.getByRole('option', { name: /2 bedroom/i }).click();
 
-    await page.getByPlaceholder(/when do you need this done/i).click();
+    await page.getByText(/When do you need this done/i).click();
     await page.getByRole('option', { name: /within a week/i }).click();
 
-    await page.getByRole('button', { name: /next/i }).first().click();
+    await page.getByRole('button', { name: /^Next$/i }).first().click();
     
     // Step 2: Property Details
     await expect(page.getByRole('heading', { name: /property details/i })).toBeVisible();
@@ -78,8 +69,8 @@ test.describe('Booking Flow', () => {
 
   test('should validate required fields', async ({ page }) => {
     // Try to proceed without filling required fields
-    // Use first() to avoid strict mode violation with Next.js dev tools button
-    await page.getByRole('button', { name: /next/i }).first().click();
+    // Use exact match to avoid Next.js dev tools button
+    await page.getByRole('button', { name: /^Next$/i }).click();
 
     // Should stay on booking page or show validation
     // Either still on booking page or validation message appears
@@ -91,25 +82,17 @@ test.describe('Booking Flow', () => {
     // Wait for form to load
     await page.waitForLoadState('networkidle');
 
-    // Fill first step - find select by text
-    const serviceSelect = page.getByText('Select a service').first();
-    const isVisible = await serviceSelect.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (!isVisible) {
-      console.log('Form not interactive - skipping test');
-      return;
-    }
-
-    await serviceSelect.click();
+    // Fill first step - click select triggers
+    await page.getByText('Select a service').click();
     await page.getByRole('option', { name: /house clearance/i }).click();
 
-    await page.getByPlaceholder('Select property size').click();
+    await page.getByText('Select property size').click();
     await page.getByRole('option', { name: /1 bedroom/i }).click();
 
-    await page.getByPlaceholder(/when do you need this done/i).click();
+    await page.getByText(/When do you need this done/i).click();
     await page.getByRole('option', { name: /flexible/i }).click();
 
-    await page.getByRole('button', { name: /next/i }).first().click();
+    await page.getByRole('button', { name: /^Next$/i }).click();
     
     // Go to step 2
     await expect(page.getByRole('heading', { name: /property details/i })).toBeVisible();
@@ -133,16 +116,8 @@ test.describe('Booking Flow', () => {
     // Wait for form to load
     await page.waitForLoadState('networkidle');
 
-    // Check if form is interactive
-    const serviceSelect = page.getByText('Select a service').first();
-    const isVisible = await serviceSelect.isVisible({ timeout: 5000 }).catch(() => false);
-
-    if (!isVisible) {
-      console.log('Form not interactive - skipping test');
-      return;
-    }
-
-    await serviceSelect.click();
+    // Fill some data
+    await page.getByText('Select a service').click();
     await page.getByRole('option', { name: /office clearance/i }).click();
 
     // Navigate away and back

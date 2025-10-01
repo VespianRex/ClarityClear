@@ -40,9 +40,6 @@ test.describe('Homepage', () => {
     // Gallery section should be visible
     const gallerySection = page.locator('#gallery');
     await expect(gallerySection).toBeVisible();
-
-    // Gallery may be empty - that's okay, just verify section exists
-    expect(true).toBeTruthy();
   });
 
   test('should have working navigation', async ({ page }) => {
